@@ -23,6 +23,7 @@
 #include "FileUtils.h"
 
 static int m_ident;
+static int m_numWarnings;
 
 using namespace std;
 
@@ -43,6 +44,9 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
     printf("\n");
     return;
   }
+
+  if (loglevel == logWARNING)
+    m_numWarnings++;
 
   printf(g_File.GetCurrTime().c_str());
   std::string strLogType;
@@ -93,3 +97,13 @@ void CLog::ClearIdent()
 {
   m_ident = 0;
 }
+
+void CLog::ResetWarnCounter()
+{
+  m_numWarnings = 0;
+};
+
+int CLog::GetWarnCount()
+{
+  return m_numWarnings;
+};

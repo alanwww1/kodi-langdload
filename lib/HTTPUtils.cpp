@@ -134,3 +134,33 @@ void CHTTPHandler::AddToURL (std::string &strURL, std::string strAddendum)
     strAddendum = strAddendum.substr(0, strAddendum.size()-1);
   strURL += strAddendum;
 }
+
+std::string CHTTPHandler::GetGithubAPIURL (CXMLResdata const &XMLResdata)
+{
+  size_t pos1, pos2, pos3;
+  std::string strGitHubURL, strGitBranch;
+  if (XMLResdata.strTranslationrepoURL.find("raw.github.com/") == std::string::npos)
+    CLog::Log(logERROR, "ResHandler: Wrong Github URL format");
+  pos1 = XMLResdata.strTranslationrepoURL.find("raw.github.com/")+15;
+  pos2 = XMLResdata.strTranslationrepoURL.find("/", pos1+1);
+  pos2 = XMLResdata.strTranslationrepoURL.find("/", pos2+1);
+  pos3 = XMLResdata.strTranslationrepoURL.find("/", pos2+1);
+  strGitHubURL = "https://api.github.com/repos/" + XMLResdata.strTranslationrepoURL.substr(pos1, pos2-pos1);
+  strGitHubURL += "/contents";
+  strGitHubURL += XMLResdata.strTranslationrepoURL.substr(pos3, XMLResdata.strTranslationrepoURL.size() - pos3 - 1);
+  strGitBranch = XMLResdata.strTranslationrepoURL.substr(pos2+1, pos3-pos2-1);
+
+  AddToURL(strGitHubURL, XMLResdata.strMergedLangfileDir);
+  AddToURL(strGitHubURL, XMLResdata.strResDirectory);
+  if (XMLResdata.Restype != CORE)
+    AddToURL(strGitHubURL, XMLResdata.strResName);
+  AddToURL(strGitHubURL, XMLResdata.strDIRprefix);
+
+  if (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)
+    AddToURL(strGitHubURL, "language");
+  else if (XMLResdata.Restype == ADDON)
+    AddToURL(strGitHubURL, "resources/language");
+
+  strGitHubURL += "?ref=" + strGitBranch;
+  return strGitHubURL;
+}

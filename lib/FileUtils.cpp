@@ -27,6 +27,7 @@
 #include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sstream>
 #include "Log.h"
 #include <ftw.h>
 #include <unistd.h>
@@ -310,3 +311,10 @@ void CFile::AddToFilename (std::string &strFilename, std::string strAddendum)
     strAddendum = strAddendum.substr(0, strAddendum.size()-1);
   strFilename += strAddendum;
 }
+
+std::string CFile::IntToStr(int number)
+{
+  std::stringstream ss;//create a stringstream
+  ss << number;//add number to the stream
+  return ss.str();//return a string with the contents of the stream
+};

@@ -39,11 +39,18 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
 {
   g_HTTPHandler.Cleanup();
   g_HTTPHandler.ReInit();
-  CLog::Log(logINFO, "ResHandler: Starting to load resource from URL: %s into memory",XMLResdata.strTranslationrepoURL.c_str());
 
-  std::string strLangURLSuffix = GetLangURLSuffix(XMLResdata);
+  CLog::Log(logINFO, "ResHandler: Starting to download resource: %s",XMLResdata.strResName.c_str());
+  std::string strLogMessage = "DOWNLOADING RESOURCE: " + XMLResdata.strResName + " FROM XBMC REPO";
+  std::string strLogHeader;
+  strLogHeader.resize(strLogMessage.size(), '*');
+  CLog::Log(logLINEFEED, "");
+  CLog::Log(logINFO, "%s", strLogHeader.c_str());
+  CLog::Log(logINFO, "%s", strLogMessage.c_str());
+  CLog::Log(logINFO, "%s", strLogHeader.c_str());
+  CLog::IncIdent(2);
 
-  if (!XMLResdata.Restype != CORE)
+  if (XMLResdata.Restype != CORE)
   {
     std::string strDloadURL = XMLResdata.strTranslationrepoURL;
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strMergedLangfileDir);
@@ -51,17 +58,17 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strResName);
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strDIRprefix);
     g_HTTPHandler.AddToURL(strDloadURL, "addon.xml");
-    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strAddonXMLSuffix);
+    strDloadURL += XMLResdata.strAddonXMLSuffix;
 
     std::string strFilename = XMLResdata.strResLocalDirectory;
-    g_File.AddToFilename(strFilename, XMLResdata.strDIRprefix);
     g_File.AddToFilename(strFilename, "addon.xml");
-    g_File.AddToFilename(strFilename, XMLResdata.strAddonXMLSuffix);
+    strFilename += XMLResdata.strAddonXMLSuffix;
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
+    CLog::Log(logINFO, "ResHandler: addon.xml downloaded for resource: %s",XMLResdata.strResName.c_str());
   }
 
-  if (XMLResdata.bHasChangelog && !XMLResdata.Restype != CORE)
+  if (XMLResdata.bHasChangelog && XMLResdata.Restype != CORE)
   {
     std::string strDloadURL = XMLResdata.strTranslationrepoURL;
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strMergedLangfileDir);
@@ -71,11 +78,10 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strLogFilename);
 
     std::string strFilename = XMLResdata.strResLocalDirectory;
-    g_File.AddToFilename(strFilename, XMLResdata.strDIRprefix);
     g_File.AddToFilename(strFilename, XMLResdata.strLogFilename);
-    g_File.AddToFilename(strFilename, XMLResdata.strAddonXMLSuffix);
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
+    CLog::Log(logINFO, "ResHandler: changelog.txt downloaded for resource: %s",XMLResdata.strResName.c_str());
   }
 
   if (XMLResdata.Restype == ADDON_NOSTRINGS)
@@ -83,28 +89,8 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
 
   std::list<std::string> listLangs;
 
-  size_t pos1, pos2, pos3;
-  std::string strGitHubURL, strGitBranch;
-  if (XMLResdata.strTranslationrepoURL.find("raw.github.com/") == std::string::npos)
-    CLog::Log(logERROR, "ResHandler: Wrong Github URL format");
-  pos1 = XMLResdata.strTranslationrepoURL.find("raw.github.com/")+15;
-  pos2 = XMLResdata.strTranslationrepoURL.find("/", pos1+1);
-  pos2 = XMLResdata.strTranslationrepoURL.find("/", pos2+1);
-  pos3 = XMLResdata.strTranslationrepoURL.find("/", pos2+1);
-  strGitHubURL = "https://api.github.com/repos/" + XMLResdata.strTranslationrepoURL.substr(pos1, pos2-pos1);
-  strGitHubURL += "/contents";
-  strGitHubURL += XMLResdata.strTranslationrepoURL.substr(pos3, XMLResdata.strTranslationrepoURL.size() - pos3 - 1);
-  strGitBranch = XMLResdata.strTranslationrepoURL.substr(pos2+1, pos3-pos2-1);
+  std::string strtemp = g_HTTPHandler.GetURLToSTR(g_HTTPHandler.GetGithubAPIURL(XMLResdata));
 
-  strGitHubURL += "/" + XMLResdata.strMergedLangfileDir + XMLResdata.strResDirectory + "/" + XMLResdata.strResName + XMLResdata.strDIRprefix;
-
-  if (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)
-    strGitHubURL += "/language";
-  else if (XMLResdata.Restype == ADDON)
-    strGitHubURL += "/resources/language";
-  strGitHubURL += "?ref=" + strGitBranch;
-
-  std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
   if (strtemp.empty())
     CLog::Log(logERROR, "ResHandler::DloadLangFiles: error getting langfile list from xbmc translation github repo");
 
@@ -113,17 +99,52 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
 
   listLangs = g_Json.ParseAvailLanguagesGITHUB(strtemp);
 
+  std::string strDloadURLPre = XMLResdata.strTranslationrepoURL;
+  g_HTTPHandler.AddToURL(strDloadURLPre, XMLResdata.strMergedLangfileDir);
+  g_HTTPHandler.AddToURL(strDloadURLPre, XMLResdata.strResDirectory);
+  if (XMLResdata.Restype != CORE)
+    g_HTTPHandler.AddToURL(strDloadURLPre, XMLResdata.strResName);
+  g_HTTPHandler.AddToURL(strDloadURLPre, XMLResdata.strDIRprefix);
+  g_HTTPHandler.AddToURL(strDloadURLPre, GetLangURLSuffix(XMLResdata));
+
+  std::string strFilenamePre = XMLResdata.strResLocalDirectory;
+  g_File.AddToFilename(strFilenamePre, GetLangDir(XMLResdata));
+
+  CLog::Log(logINFO, "ResHandler: Downloadeding language files:");
+
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
   {
     printf (" %s", it->c_str());
 
     if (XMLResdata.bWriteXML)
-      g_HTTPHandler.DloadURLToFile(XMLResdata.strTranslationrepoURL + strLangURLSuffix + *it + "/strings.xml" + XMLResdata.strURLSuffix,
-                                   GetLangDir(XMLResdata) + "strings.xml");
+    {
+      std::string strDloadURL = strDloadURLPre;
+      g_HTTPHandler.AddToURL(strDloadURL, *it);
+      g_HTTPHandler.AddToURL(strDloadURL, "strings.xml");
+
+      std::string strFilename = strFilenamePre;
+      g_File.AddToFilename(strFilename, *it);
+      g_File.AddToFilename(strFilename, "strings.xml");
+
+      g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);   
+    }
     else if (XMLResdata.bWritePO)
-      g_HTTPHandler.DloadURLToFile(XMLResdata.strTranslationrepoURL + strLangURLSuffix + *it + "/strings.po" + XMLResdata.strURLSuffix,
-                                   GetLangDir(XMLResdata) + "strings.po");
+    {
+      std::string strDloadURL = strDloadURLPre;
+      g_HTTPHandler.AddToURL(strDloadURL, *it);
+      g_HTTPHandler.AddToURL(strDloadURL, "strings.po");
+
+      std::string strFilename = strFilenamePre;
+      g_File.AddToFilename(strFilename, *it);
+      g_File.AddToFilename(strFilename, "strings.po");
+
+      g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);   
+    }
   }
+  printf ("\n\n");
+  CLog::Log(logINFO, "ResHandler: %i language files were downloaded for resource: %s",listLangs.size(), XMLResdata.strResName.c_str());
+  CLog::DecIdent(2);
+
   return true;
 }
 
@@ -133,13 +154,14 @@ std::string CResourceHandler::GetLangDir(CXMLResdata const &XMLResdata)
   switch (XMLResdata.Restype)
   {
     case ADDON: case ADDON_NOSTRINGS:
-      strLangDir = XMLResdata.strResLocalDirectory + "resources" + DirSepChar + "language" + DirSepChar;
+      g_File.AddToFilename(strLangDir, "resources");
+      g_File.AddToFilename(strLangDir, "language");
       break;
     case SKIN:
-      strLangDir = XMLResdata.strResLocalDirectory + "language" + DirSepChar;
+      g_File.AddToFilename(strLangDir, "language");
       break;
     case CORE:
-      strLangDir = XMLResdata.strResLocalDirectory + "language" + DirSepChar;
+      g_File.AddToFilename(strLangDir, "language");
       break;
     default:
       CLog::Log(logERROR, "ResHandler: No resourcetype defined for resource: %s",XMLResdata.strResName.c_str());

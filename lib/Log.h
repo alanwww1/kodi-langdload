@@ -45,4 +45,6 @@ public:
   static void IncIdent(int numident);
   static void DecIdent(int numident);
   static void ClearIdent();
+  static void ResetWarnCounter();
+  static int GetWarnCount();
 };

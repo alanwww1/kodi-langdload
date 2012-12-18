@@ -27,6 +27,7 @@
 #include <string>
 #include <stdio.h>
 #include <curl/curl.h>
+#include "UpdateXMLHandler.h"
 
 enum
 {
@@ -48,6 +49,7 @@ public:
   void DloadURLToFile(std::string strURL, std::string strFilename);
   void Cleanup();
   void AddToURL (std::string &strURL, std::string strAddendum);
+  std::string GetGithubAPIURL (CXMLResdata const &XMLResdata);
 private:
   CURL *m_curlHandle;
   std::string URLEncode (std::string strURL);

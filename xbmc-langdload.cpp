@@ -36,6 +36,7 @@
 #include "lib/Log.h"
 #include "lib/UpdateXMLHandler.h"
 #include "lib/ResourceHandler.h"
+#include "lib/FileUtils.h"
 
 class CInputData
 {
@@ -63,8 +64,10 @@ void PrintUsage()
 {
   printf
   (
-  "Usage: xbmc-txpudate PROJECTDIR [working mode]\n\n"
-  "PROJECTDIR: the directory which contains the xbmc-txupdate.xml settings file and the .passwords file.\n"
+  "Usage: xbmc-langdload ADDONID LOCALDIR\n\n"
+  "ADDONID: The id of the addon which is defined in the \"id\" tag in the addon.xml file\n"
+  "LOCALDIR: The local directory\n"
+
   "            This will be the directory where your merged and transifex update files get generated.\n\n"
   "Working modes:\n"
   "     -d   Only download to local cache, without performing a merge.\n"
@@ -120,7 +123,9 @@ int main(int argc, char* argv[])
 
   try
   {
-    CLog::Log(logINFO, "XBMC-TXUPDATE v%s\n\n", VERSION.c_str());
+    CLog::Log(logINFO, "XBMC-LANGDLOAD v%s", VERSION.c_str());
+    CLog::Log(logLINEFEED, "");
+
     std::map<std::string, CXMLResdata> mapResourceData;
     CUpdateXMLHandler UpdateXMLHandler;
     CResourceHandler ResourceHandler;
@@ -136,6 +141,16 @@ int main(int argc, char* argv[])
         ResourceHandler.DloadLangFiles(XMLResdata);
       }
     }
+
+    std::string strLogMessage = "PROCESS FINISHED WITH " + g_File.IntToStr(CLog::GetWarnCount()) + " WARNINGS";
+    std::string strLogHeader;
+    strLogHeader.resize(strLogMessage.size(), '*');
+    CLog::Log(logLINEFEED, "");
+    CLog::Log(logINFO, "%s", strLogHeader.c_str());
+    CLog::Log(logINFO, "%s", strLogMessage.c_str());
+    CLog::Log(logINFO, "%s", strLogHeader.c_str());
+
+    g_HTTPHandler.Cleanup();
   }
   catch (const int calcError)
   {
