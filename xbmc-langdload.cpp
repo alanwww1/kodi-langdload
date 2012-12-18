@@ -30,11 +30,32 @@
 #endif
 
 #include <string>
+#include <list>
 #include <stdio.h>
-#include "lib/ProjectHandler.h"
 #include "lib/HTTPUtils.h"
-#include "lib/xbmclangcodes.h"
-#include "lib/Settings.h"
+#include "lib/Log.h"
+#include "lib/UpdateXMLHandler.h"
+#include "lib/ResourceHandler.h"
+
+class CInputData
+{
+public:
+  CInputData();
+  ~CInputData();
+  std::string strAddonName;
+  std::string strAddonDir;
+  bool bDloadChangelog;
+  bool bDloadEnglishFile;
+};
+CInputData::CInputData()
+{
+  bDloadChangelog = true;
+  bDloadEnglishFile =true;
+}
+
+CInputData::~CInputData()
+{}
+
 
 using namespace std;
 
@@ -66,177 +87,55 @@ void PrintUsage()
 int main(int argc, char* argv[])
 {
   setbuf(stdout, NULL);
-  if (argc > 3 || argc < 2)
+  if (argc > 3 || argc == 0)
   {
-    printf ("\nBad arguments given\n\n");
+    printf ("\nArgument counr error\n\n");
     PrintUsage();
     return 1;
   }
 
-  std::string WorkingDir, strMode;
-  bool bDownloadNeeded = false;
-  bool bMergeNeeded = false;
-  bool bUploadNeeded = false;
-  bool bForceUpload;
-
-  if (argv[1])
-   WorkingDir = argv[1];
-  if (WorkingDir.empty() || !g_File.DirExists(WorkingDir))
-  {
-    printf ("\nMissing or wrong project directory specified: %s, stopping.\n\n", WorkingDir.c_str());
-    PrintUsage();
-    return 1;
-  }
+  std::list<CInputData> listInputData;
+  CInputData InputData;
 
   if (argc == 3)
   {
+    if (argv[1])
+      InputData.strAddonName = argv[1];
     if (argv[2])
-      strMode = argv[2];
-    if (strMode.empty() && strMode[0] != '-')
+      InputData.strAddonDir = argv[2];
+    if (InputData.strAddonDir.empty())
     {
-      printf ("\nMissing or wrong working mode format used. Stopping.\n\n");
+      printf ("\nMissing or empty addon directory, stopping.\n\n");
       PrintUsage();
       return 1;
     }
-    if (strMode == "-d")
-      bDownloadNeeded = true;
-    else if (strMode == "-dm" || strMode == "-m")
-      {bDownloadNeeded = true; bMergeNeeded = true;}
-    else if (strMode == "-dmu")
-      {bDownloadNeeded = true; bMergeNeeded = true; bUploadNeeded = true;}
-    else if (strMode == "-fu")
+    if (InputData.strAddonName.empty())
     {
-      bUploadNeeded = true;
-      bForceUpload = true;
-    }
-    else if (strMode == "-u")
-      bUploadNeeded = true;
-
-    else
-    {
-      printf ("\nWrong working mode arguments used. Stopping.\n\n");
+      printf ("\nMissing or empty addonname, stopping.\n\n");
       PrintUsage();
       return 1;
     }
+    listInputData.push_back(InputData);
   }
-  if (argc == 2)
-    {bDownloadNeeded = true; bMergeNeeded = true;}
-
-  printf("\nXBMC-TXUPDATE v%s by Team XBMC\n", VERSION.c_str());
 
   try
   {
-    if (WorkingDir[WorkingDir.length()-1] != DirSepChar)
-      WorkingDir.append(&DirSepChar);
+    CLog::Log(logINFO, "XBMC-TXUPDATE v%s\n\n", VERSION.c_str());
+    std::map<std::string, CXMLResdata> mapResourceData;
+    CUpdateXMLHandler UpdateXMLHandler;
+    CResourceHandler ResourceHandler;
 
-    CLog::Init(WorkingDir + "xbmc-txupdate.log");
-    CLog::Log(logINFO, "Root Directory: %s", WorkingDir.c_str());
+    UpdateXMLHandler.DownloadXMLToMap("https://raw.github.com/xbmc/translations/master/translations/xbmc-main-frodo/", mapResourceData);
 
-    g_HTTPHandler.LoadCredentials(WorkingDir + ".passwords.xml");
-    g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
-
-    CProjectHandler TXProject;
-    TXProject.InitUpdateXMLHandler(WorkingDir);
-    g_LCodeHandler.Init("https://raw.github.com/transifex/transifex/master/transifex/languages/fixtures/all_languages.json");
-
-    if (bDownloadNeeded)
+    for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
     {
-      if (!g_File.FileExist(WorkingDir + ".httpcache" + DirSepChar + ".lastdloadtime") ||
-          g_File.GetFileAge(WorkingDir + ".httpcache" + DirSepChar + ".lastdloadtime") > g_Settings.GetHTTPCacheExpire() * 60)
+      if (mapResourceData.find(it->strAddonName) != mapResourceData.end())
       {
-        g_File.DeleteDirectory(WorkingDir + ".httpcache"); // Clean the complete cache as all our files in there are outdated
-        g_HTTPHandler.SetCacheDir(WorkingDir + ".httpcache");
+        CXMLResdata XMLResdata = mapResourceData[it->strAddonName];
+        XMLResdata.strResLocalDirectory = it->strAddonDir;
+        ResourceHandler.DloadLangFiles(XMLResdata);
       }
-
-      g_File.WriteFileFromStr(WorkingDir + ".httpcache" + DirSepChar + ".dload_merge_status", "fail");
-      g_File.WriteFileFromStr(WorkingDir + ".httpcache" + DirSepChar + ".lastdloadtime", "Last download time: " + g_File.GetCurrTime());
-
-      printf("\n");
-      printf("----------------------------------------\n");
-      printf("DOWNLOADING RESOURCES FROM TRANSIFEX.NET\n");
-      printf("----------------------------------------\n");
-
-      CLog::Log(logLINEFEED, "");
-      CLog::Log(logINFO, "****************************************");
-      CLog::Log(logINFO, "DOWNLOADING RESOURCES FROM TRANSIFEX.NET");
-      CLog::Log(logINFO, "****************************************");
-
-      TXProject.FetchResourcesFromTransifex();
-
-      printf("\n");
-      printf("-----------------------------------\n");
-      printf("DOWNLOADING RESOURCES FROM UPSTREAM\n");
-      printf("-----------------------------------\n");
-
-      CLog::Log(logLINEFEED, "");
-      CLog::Log(logINFO, "***********************************");
-      CLog::Log(logINFO, "DOWNLOADING RESOURCES FROM UPSTREAM");
-      CLog::Log(logINFO, "***********************************");
-
-      TXProject.FetchResourcesFromUpstream();
-
-      if (bMergeNeeded)
-      {
-        printf("\n");
-        printf("-----------------\n");
-        printf("MERGING RESOURCES\n");
-        printf("-----------------\n");
-
-        CLog::Log(logLINEFEED, "");
-        CLog::Log(logINFO, "*****************");
-        CLog::Log(logINFO, "MERGING RESOURCES");
-        CLog::Log(logINFO, "*****************");
-
-        TXProject.CreateMergedResources();
-
-        printf("\n");
-        printf("--------------------------------------------\n");
-        printf("WRITING MERGED AND TXUPDATE RESOURCES TO HDD\n");
-        printf("--------------------------------------------\n");
-
-        CLog::Log(logLINEFEED, "");
-        CLog::Log(logINFO, "********************************************");
-        CLog::Log(logINFO, "WRITING MERGED AND TXUPDATE RESOURCES TO HDD");
-        CLog::Log(logINFO, "********************************************");
-
-        TXProject.WriteResourcesToFile(WorkingDir);
-        g_File.CopyFile(WorkingDir + "xbmc-txupdate.xml", WorkingDir + ".httpcache" + DirSepChar + ".last_xbmc-txupdate.xml");
-      }
-      g_File.WriteFileFromStr(WorkingDir + ".httpcache" + DirSepChar + ".dload_merge_status", "ok");
     }
-
-    if (bUploadNeeded)
-    {
-      if (!bForceUpload && g_File.ReadFileToStrE(WorkingDir + ".httpcache" + DirSepChar + ".dload_merge_status") != "ok")
-        CLog::Log(logERROR, "There was no successful download and merge run before. Please (re)run download and merge.");
-
-      if (!bForceUpload && g_File.ReadFileToStrE(WorkingDir + ".httpcache" + DirSepChar + ".last_xbmc-txupdate.xml") !=
-          g_File.ReadFileToStrE(WorkingDir + "xbmc-txupdate.xml"))
-        CLog::Log(logERROR, "xbmc-txupdate.xml file changed since last downlad and merge. Please (re)run download and merge.");
-
-      printf("\n");
-      printf("-----------------------------------------\n");
-      printf("UPLOADING LANGUAGE FILES TO TRANSIFEX.NET\n");
-      printf("-----------------------------------------\n");
-
-      TXProject.UploadTXUpdateFiles(WorkingDir);
-    }
-
-    if (CLog::GetWarnCount() ==0)
-    {
-      printf("\n");
-      printf("--------------------------------------------\n");
-      printf("PROCESS FINISHED SUCCESFULLY WITHOUT WARNINGS\n");
-      printf("--------------------------------------------\n\n");
-    }
-    else
-    {
-      printf("\n");
-      printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-      printf("PROCESS FINISHED WITH %i WARNINGS\n", CLog::GetWarnCount());
-      printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
-    }
-
   }
   catch (const int calcError)
   {

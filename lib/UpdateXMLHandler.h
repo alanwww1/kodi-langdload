@@ -21,15 +21,20 @@
 #pragma once
 
 #include "TinyXML/tinyxml.h"
-#include "POUtils/POUtils.h"
 #include <string>
+#include <map>
+
+const std::string DEFAULTMERGEDLANGDIR = "merged-langfiles";
 
 class CXMLResdata
 {
 public:
   CXMLResdata();
   ~CXMLResdata();
+  std::string strTranslationrepoURL;
   std::string strUpstreamURL;
+  std::string strProjName;
+  std::string strMergedLangfileDir;
   std::string strLangsFromUpstream;
   int Restype;
   std::string strResDirectory;
@@ -40,6 +45,8 @@ public:
   std::string strAddonXMLSuffix;
   std::string strLogFormat;
   std::string strLogFilename;
+  std::string strResLocalDirectory;
+  std::string strResName;
   bool bWritePO, bWriteXML, bHasChangelog;
 };
 
@@ -48,14 +55,5 @@ class CUpdateXMLHandler
 public:
   CUpdateXMLHandler();
   ~CUpdateXMLHandler();
-  bool LoadXMLToMem(std::string rootDir);
-  CXMLResdata GetResData(std::string strResName);
-  const std::map<std::string, CXMLResdata> &GetResMap() const {return m_mapXMLResdata;}
-  std::string GetResNameFromTXResName(std::string const &strTXResName);
-private:
-  int GetResType(std::string const &ResRootDir) const {return m_resType;}
-  std::string IntToStr(int number);
-  int m_resType; 
-  std::map<std::string, CXMLResdata> m_mapXMLResdata;
-  std::map<std::string, CXMLResdata>::iterator itXMLResdata;
+  bool DownloadXMLToMap (std::string strURL, std::map<std::string, CXMLResdata> &mapResourceData);
 };

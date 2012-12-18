@@ -28,7 +28,7 @@
 enum TLogLevel { logERROR, logWARNING, logINFO, logDEBUG, logLINEFEED, logCLOSETABLE, logADDTABLEHEADER};
 
 const std::string listLogTypes[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
-const std::string VERSION = "0.9";
+const std::string VERSION = "0.8";
 
 struct CLogIdent
 {
@@ -41,13 +41,8 @@ class CLog
 public:
   CLog();
   ~CLog();
-  static void Close();
   static void Log(TLogLevel loglevel, const char *format, ... );
-  static void LogTable(TLogLevel loglevel, std::string strTableName, const char *format, ... );
-  static bool Init(std::string logfile);
   static void IncIdent(int numident);
   static void DecIdent(int numident);
   static void ClearIdent();
-  static void ResetWarnCounter();
-  static int GetWarnCount();
 };

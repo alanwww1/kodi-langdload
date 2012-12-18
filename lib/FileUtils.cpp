@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "../Log.h"
+#include "Log.h"
 #include <ftw.h>
 #include <unistd.h>
 
@@ -295,4 +295,18 @@ int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW
 int CFile::DeleteDirectory(std::string strDirPath)
 {
   return nftw(strDirPath.c_str(), unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
+}
+
+void CFile::AddToFilename (std::string &strFilename, std::string strAddendum)
+{
+  if (strAddendum.empty())
+    return;
+
+  if (strFilename.find_last_of(DirSepChar) != strFilename.size()-1)
+    strFilename += DirSepChar;
+  if (strAddendum.find_first_of(DirSepChar) == 0)
+    strAddendum = strAddendum.substr(1);
+  if (strAddendum.find_last_of(DirSepChar) == strAddendum.size()-1)
+    strAddendum = strAddendum.substr(0, strAddendum.size()-1);
+  strFilename += strAddendum;
 }

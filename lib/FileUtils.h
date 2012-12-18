@@ -63,6 +63,7 @@ public:
   std::string GetCurrMonth();
   std::string GetCurrDay();
   std::string GetCurrMonthText();
+  void AddToFilename (std::string &strFilename, std::string strAddendum);
 };
 
 extern CFile g_File;

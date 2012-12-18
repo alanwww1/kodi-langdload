@@ -87,7 +87,7 @@ bool CProjectHandler::FetchResourcesFromUpstream()
 
     CLog::IncIdent(4);
     m_mapResourcesUpstr[it->first] = ResourceHandler;
-    m_mapResourcesUpstr[it->first].FetchPOFilesUpstreamToMem(it->second, CreateMergedLanguageList(it->first, true));
+    m_mapResourcesUpstr[it->first].DloadLangFiles(it->second, CreateMergedLanguageList(it->first, true));
     CLog::DecIdent(4);
     printf(" )\n");
   }

@@ -27,14 +27,16 @@
 #include <string>
 #include <stdio.h>
 #include <curl/curl.h>
-#include "TinyXML/tinyxml.h"
-#include "POHandler.h"
 
-struct CLoginData
+enum
 {
-  std::string strLogin;
-  std::string strPassword;
+  SKIN = 100,
+  ADDON = 101,
+  CORE = 102,
+  ADDON_NOSTRINGS = 103,
+  UNKNOWN = 104
 };
+
 
 class CHTTPHandler
 {
@@ -43,31 +45,14 @@ public:
   ~CHTTPHandler();
   void ReInit();
   std::string GetURLToSTR(std::string strURL, bool bSkiperror = false);
+  void DloadURLToFile(std::string strURL, std::string strFilename);
   void Cleanup();
-  void SetCacheDir(std::string strCacheDir);
-  bool LoadCredentials (std::string CredentialsFilename);
-  bool PutFileToURL(std::string const &strFilePath, std::string const &strURL, bool &buploaded,
-                    size_t &stradded, size_t &strupd);
-  bool CreateNewResource(std::string strResname, std::string strENPOFilePath, std::string strURL, size_t &stradded,
-                         std::string const &strURLENTransl);
-  void DeleteCachedFile(std::string const &strURL, std::string strPrefix);
-  bool ComparePOFilesInMem(CPOHandler * pPOHandler1, CPOHandler * pPOHandler2, bool bLangIsEN) const;
-
+  void AddToURL (std::string &strURL, std::string strAddendum);
 private:
   CURL *m_curlHandle;
-  std::string m_strCacheDir;
-  long curlURLToCache(std::string strCacheFile, std::string strURL, bool bSkiperror);
-  long curlPUTPOFileToURL(std::string const &strFilePath, std::string const &strURL, size_t &stradded, size_t &strupd);
-
-  CLoginData GetCredentials (std::string strURL);
-  bool ComparePOFiles(std::string strPOFilePath1, std::string strPOFilePath2) const;
-  std::string CacheFileNameFromURL(std::string strURL);
   std::string URLEncode (std::string strURL);
-  std::map<std::string, CLoginData> m_mapLoginData;
-  std::map<std::string, CLoginData>::iterator itMapLoginData;
 };
 
-size_t Write_CurlData_File(void *ptr, size_t size, size_t nmemb, FILE *stream);
 size_t Write_CurlData_String(char *data, size_t size, size_t nmemb, std::string *buffer);
 
 extern CHTTPHandler g_HTTPHandler;

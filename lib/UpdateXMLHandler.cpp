@@ -21,10 +21,7 @@
 
 #include "UpdateXMLHandler.h"
 #include "Log.h"
-#include "Settings.h"
-#include <stdlib.h>
-#include <sstream>
-
+#include "HTTPUtils.h"
 
 using namespace std;
 
@@ -47,19 +44,21 @@ CUpdateXMLHandler::CUpdateXMLHandler()
 CUpdateXMLHandler::~CUpdateXMLHandler()
 {};
 
-bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
+bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::string, CXMLResdata> &mapResourceData)
 {
-  std::string UpdateXMLFilename = rootDir  + DirSepChar + "xbmc-txupdate.xml";
+  std::string strURLXMLFile = strURL + "xbmc-txupdate.xml";
+
+  std::string strXMLFile = g_HTTPHandler.GetURLToSTR(strURLXMLFile);
+  if (strXMLFile.empty())
+    CLog::Log(logERROR, "CAddonXMLHandler::FetchAddonXMLFileUpstr: http error getting XML file from upstream url: %s", strURL.c_str());
+
   TiXmlDocument xmlUpdateXML;
 
-  if (!xmlUpdateXML.LoadFile(UpdateXMLFilename.c_str()))
+  if (!xmlUpdateXML.Parse(strXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
-    CLog::Log(logERROR, "UpdXMLHandler: No 'xbmc-txupdate.xml' file exists in the specified project dir. Cannot continue. "
-                        "Please create one!");
+    CLog::Log(logERROR, "UpdateXMLHandler::DownloadXMLToMem: UpdateXML file problem: %s %s\n", xmlUpdateXML.ErrorDesc(), strURL.c_str());
     return false;
   }
-
-  CLog::Log(logINFO, "UpdXMLHandler: Succesfuly found the update.xml file in the specified project directory");
 
   TiXmlElement* pRootElement = xmlUpdateXML.RootElement();
   if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="resources")
@@ -68,77 +67,21 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
     return false;
   }
 
-  std::string strProjName ;
-  if (pRootElement->Attribute("projectname") && (strProjName = pRootElement->Attribute("projectname")) != "")
-  {
-    CLog::Log(logINFO, "UpdXMLHandler: Found projectname in xbmc-txupdate.xml file: %s",strProjName.c_str());
-    g_Settings.SetProjectname(strProjName);
-  }
-  else
+  std::string strProjName;
+  if (!pRootElement->Attribute("projectname") || (strProjName = pRootElement->Attribute("projectname")) == "")
     CLog::Log(logERROR, "UpdXMLHandler: No projectname specified in xbmc-txupdate.xml file. Cannot continue. "
-                        "Please specify the Transifex projectname in the xml file");
+                        "Please contact TeamXBMC about this problem!");
 
-  std::string strHTTPCacheExp;
-  if (pRootElement->Attribute("http_cache_expire") && (strHTTPCacheExp = pRootElement->Attribute("http_cache_expire")) != "")
-  {
-    CLog::Log(logINFO, "UpdXMLHandler: Found http cache expire time in xbmc-txupdate.xml file: %s", strHTTPCacheExp.c_str());
-    g_Settings.SetHTTPCacheExpire(strtol(&strHTTPCacheExp[0], NULL, 10));
-  }
-  else
-    CLog::Log(logINFO, "UpdXMLHandler: No http cache expire time specified in xbmc-txupdate.xml file. Using default value: %iminutes",
-              DEFAULTCACHEEXPIRE);
-
-  std::string strMinCompletion;
-  if (pRootElement->Attribute("min_completion") && (strMinCompletion = pRootElement->Attribute("min_completion")) != "")
-  {
-    CLog::Log(logINFO, "UpdXMLHandler: Found min completion percentage in xbmc-txupdate.xml file: %s", strMinCompletion.c_str());
-    g_Settings.SetMinCompletion(strtol(&strMinCompletion[0], NULL, 10));
-  }
-  else
-    CLog::Log(logINFO, "UpdXMLHandler: No min completion percentage specified in xbmc-txupdate.xml file. Using default value: %i%",
-              DEFAULTMINCOMPLETION);
+    CLog::Log(logINFO, "Reading xbmc-txupdate.xml file fro project: %s", strProjName.c_str());
 
   std::string strMergedLangfileDir;
-  if (pRootElement->Attribute("merged_langfiledir") && (strMergedLangfileDir = pRootElement->Attribute("merged_langfiledir")) != "")
-  {
-    CLog::Log(logINFO, "UpdXMLHandler: Found merged language file directory in xbmc-txupdate.xml file: %s", strMergedLangfileDir.c_str());
-    g_Settings.SetMergedLangfilesDir(strMergedLangfileDir);
-  }
-  else
-    CLog::Log(logINFO, "UpdXMLHandler: No merged language file directory specified in xbmc-txupdate.xml file. Using default value: %s",
-              g_Settings.GetMergedLangfilesDir().c_str());
-
-  std::string strTXUpdatelangfileDir;
-  if (pRootElement->Attribute("temptxupdate_langfiledir") && (strTXUpdatelangfileDir = pRootElement->Attribute("temptxupdate_langfiledir")) != "")
-  {
-    CLog::Log(logINFO, "UpdXMLHandler: Found temp tx update language file directory in xbmc-txupdate.xml file: %s", strTXUpdatelangfileDir.c_str());
-    g_Settings.SetTXUpdateLangfilesDir(strTXUpdatelangfileDir);
-  }
-  else
-    CLog::Log(logINFO, "UpdXMLHandler: No temp tx update language file directory specified in xbmc-txupdate.xml file. Using default value: %s",
-              g_Settings.GetTXUpdateLangfilesDir().c_str());
-
-  std::string strSupportEmailAdd;
-  if (pRootElement->Attribute("support_email") && (strSupportEmailAdd = pRootElement->Attribute("support_email")) != "")
-  {
-    CLog::Log(logINFO, "UpdXMLHandler: Found support email address in xbmc-txupdate.xml file: %s", strSupportEmailAdd.c_str());
-    g_Settings.SetSupportEmailAdd(strSupportEmailAdd);
-  }
-  else
-    CLog::Log(logINFO, "UpdXMLHandler: No support email address specified in xbmc-txupdate.xml file. Using default value: %s",
-              g_Settings.GetSupportEmailAdd().c_str());
-
-  std::string strForcePOComm;
-  if (pRootElement->Attribute("forcePOComm") && (strForcePOComm = pRootElement->Attribute("forcePOComm")) == "true")
-  {
-    CLog::Log(logINFO, "UpdXMLHandler: Forced PO file comments for non English languages.", strMergedLangfileDir.c_str());
-    g_Settings.SetForcePOComments(true);
-  }
+  if (!pRootElement->Attribute("merged_langfiledir") || (strMergedLangfileDir = pRootElement->Attribute("merged_langfiledir")) == "")
+    strMergedLangfileDir = DEFAULTMERGEDLANGDIR;
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
   if (!pChildResElement || pChildResElement->NoChildren())
   {
-    CLog::Log(logERROR, "UpdXMLHandler: No xml element called \"resource\" exists in the xml file. Cannot continue. Please create at least one");
+    CLog::Log(logERROR, "UpdXMLHandler: No xml element called \"resource\" exists in the xml file. Please contact TeamXBMC about this problem!");
     return false;
   }
 
@@ -146,12 +89,18 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
   while (pChildResElement && pChildResElement->FirstChild())
   {
     CXMLResdata currResData;
+    currResData.strTranslationrepoURL = strURL;
+    currResData.strProjName = strProjName;
+    currResData.strMergedLangfileDir = strMergedLangfileDir;
+
     std::string strResName;
     if (!pChildResElement->Attribute("name") || (strResName = pChildResElement->Attribute("name")) == "")
     {
-      CLog::Log(logERROR, "UpdXMLHandler: No name specified for resource. Cannot continue. Please specify it.");
+      CLog::Log(logERROR, "UpdXMLHandler: No name specified for resource. Cannot continue. Please contact TeamXBMC about this problem!");
       return false;
     }
+
+    currResData.strResName = strResName;
 
     if (pChildResElement->FirstChild())
     {
@@ -224,38 +173,10 @@ bool CUpdateXMLHandler::LoadXMLToMem (std::string rootDir)
       if (currResData.strTXResName.empty())
         CLog::Log(logERROR, "UpdXMLHandler: Transifex resource name is empty or missing for resource %s", strResName.c_str());
 
-      m_mapXMLResdata[strResName] = currResData;
-      CLog::Log(logINFO, "UpdXMLHandler: found resource in update.xml file: %s, Type: %s, SubDir: %s",
-                strResName.c_str(), strType.c_str(), currResData.strResDirectory.c_str());
+      mapResourceData[strResName] = currResData;
     }
     pChildResElement = pChildResElement->NextSiblingElement("resource");
   }
 
   return true;
 };
-
-std::string CUpdateXMLHandler::GetResNameFromTXResName(std::string const &strTXResName)
-{
-  for (itXMLResdata = m_mapXMLResdata.begin(); itXMLResdata != m_mapXMLResdata.end(); itXMLResdata++)
-  {
-    if (itXMLResdata->second.strTXResName == strTXResName)
-      return itXMLResdata->first;
-  }
-  return "";
-}
-
-std::string CUpdateXMLHandler::IntToStr(int number)
-{
-  std::stringstream ss;//create a stringstream
-  ss << number;//add number to the stream
-  return ss.str();//return a string with the contents of the stream
-};
-
-CXMLResdata CUpdateXMLHandler::GetResData(string strResName)
-{
-  CXMLResdata EmptyXMLResdata;
-  if (m_mapXMLResdata.find(strResName) != m_mapXMLResdata.end())
-    return m_mapXMLResdata[strResName];
-  CLog::Log(logINFO, "UpdXMLHandler::GetResData: unknown resource to find: %s", strResName.c_str());
-  return EmptyXMLResdata;
-}

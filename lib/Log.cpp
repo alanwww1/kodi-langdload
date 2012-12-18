@@ -20,55 +20,33 @@
  */
 
 #include "Log.h"
-#include "FileUtils/FileUtils.h"
+#include "FileUtils.h"
 
-static FILE * m_pLogFile;
-static int m_numWarnings;
 static int m_ident;
-static std::map<std::string, std::string> m_mapStrResultTable;
 
 using namespace std;
 
 CLog::CLog()
 {
-  m_numWarnings = 0;
   m_ident = 0;
+  printf("XBMC-TXUPDATE v%s Logfile\n\n", VERSION.c_str());
 }
 
 CLog::~CLog()
 {}
 
-bool CLog::Init(std::string logfile)
-{
-   m_pLogFile = fopen (logfile.c_str(),"wb");
-  if (m_pLogFile == NULL)
-  {
-    fclose(m_pLogFile);
-    printf("Error creating logfile: %s\n", logfile.c_str());
-    return false;
-  }
-  fprintf(m_pLogFile, "XBMC-TXUPDATE v%s Logfile\n\n", VERSION.c_str());
-
-  return true;
-};
-
 void CLog::Log(TLogLevel loglevel, const char *format, ... )
 {
-  if (!m_pLogFile)
-    return;
 
   if (loglevel == logLINEFEED)
   {
-    fprintf(m_pLogFile, "\n");
+    printf("\n");
     return;
   }
 
-  if (loglevel == logWARNING)
-    m_numWarnings++;
-
-  fprintf(m_pLogFile, g_File.GetCurrTime().c_str());
+  printf(g_File.GetCurrTime().c_str());
   std::string strLogType;
-  fprintf(m_pLogFile, "\t%s\t", listLogTypes[loglevel].c_str());
+  printf("\t%s\t", listLogTypes[loglevel].c_str());
 
   va_list va;
   va_start(va, format);
@@ -77,8 +55,8 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
   std::string strIdent;
   strIdent.assign(m_ident, ' ');
 
-  vfprintf(m_pLogFile, (strIdent + strFormat).c_str(), va);
-  fprintf(m_pLogFile, "\n");
+  vprintf((strIdent + strFormat).c_str(), va);
+  printf("\n");
   va_end(va);
 
   if (loglevel == logERROR || loglevel == logWARNING)
@@ -100,54 +78,6 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
   return;
 };
 
-void CLog::LogTable(TLogLevel loglevel, std::string strTableName, const char *format, ... )
-{
-  if (loglevel == logADDTABLEHEADER)
-  {
-    std::string strIdent;
-    strIdent.assign(m_ident, ' ');
-    std::string strHeader = format;
-
-    m_mapStrResultTable[strTableName] = g_File.GetCurrTime() + "\t" + listLogTypes[logINFO] + "\t" + strIdent +
-                                         strHeader + m_mapStrResultTable[strTableName];
-    return;
-  }
-
-  if (loglevel == logCLOSETABLE)
-  {
-    std::string strIdent;
-    strIdent.assign(m_ident, ' ');
-
-    fprintf(m_pLogFile, "%s", (m_mapStrResultTable[strTableName]).c_str());
-    m_mapStrResultTable.erase(m_mapStrResultTable.find(strTableName));
-    return;
-  }
-
-  m_mapStrResultTable[strTableName] += g_File.GetCurrTime();
-  m_mapStrResultTable[strTableName] += "\t" + listLogTypes[loglevel] + "\t";
-
-  va_list va;
-  va_start(va, format);
-
-  std::string strFormat = format;
-  std::string strIdent;
-  strIdent.assign(m_ident, ' ');
-
-  char cstrLogMessage[2048];
-  vsprintf(cstrLogMessage, (strIdent + strFormat + "\n").c_str(), va);
-  va_end(va);
-
-  m_mapStrResultTable[strTableName] += cstrLogMessage;
-  return;
-}
-
-void CLog::Close()
-{
-  if (m_pLogFile)
-    fclose(m_pLogFile);
-  return;
-};
-
 void CLog::IncIdent(int numident)
 {
   m_ident += numident;
@@ -163,13 +93,3 @@ void CLog::ClearIdent()
 {
   m_ident = 0;
 }
-
-void CLog::ResetWarnCounter()
-{
-  m_numWarnings = 0;
-};
-
-int CLog::GetWarnCount()
-{
-  return m_numWarnings;
-};
