@@ -30,7 +30,6 @@ all: ${OUTPUT}
 
 SRCS := lib/TinyXML/tinyxml.cpp lib/TinyXML/tinyxmlparser.cpp lib/TinyXML/tinystr.cpp lib/TinyXML/tinyxmlerror.cpp \
 lib/HTTPUtils.cpp \
-lib/CharsetUtils/CharsetUtils.cpp \
 lib/FileUtils.cpp \
 lib/Log.cpp \
 lib/UpdateXMLHandler.cpp \
@@ -56,7 +55,6 @@ tinyxml.o: tinyxml.h tinyxml.cpp tinystr.o tinyparser.o tinyxmlerror.o
 tinyxmlparser.o: tinyxmlparser.cpp tinyxmlparser.h
 tinyxmlerror.o: tinyxmlerror.cpp tinyxmlerror.h
 tinystr.o: tinystr.cpp tinystr.h
-CharsteUtils.o: CharsetUtils.h CharsetUtils.cpp Log.cpp Log.h
 FileUtils.o: FileUtils.h FileUtils.cpp Log.cpp Log.h
 UpdateXMLHandler.o: UpdateXMLHandler.h Log.cpp Log.h tinyxml.o
 HTTPUtils.o: HTTPUtils.h Log.h Log.cpp
