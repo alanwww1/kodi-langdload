@@ -35,7 +35,7 @@ class CJSONHandler
 public:
   CJSONHandler();
   ~CJSONHandler();
-  std::list<std::string> ParseAvailLanguagesGITHUB(std::string strJSON);
+  std::list<std::string> ParseAvailDirsGITHUB(std::string strJSON);
 };
 extern CJSONHandler g_Json;
 #endif

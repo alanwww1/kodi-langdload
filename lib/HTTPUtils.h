@@ -50,6 +50,7 @@ public:
   void Cleanup();
   void AddToURL (std::string &strURL, std::string strAddendum);
   std::string GetGithubAPIURL (CXMLResdata const &XMLResdata);
+  void GetGithubAPIURLFromURL (std::string &strUrl, std::string &strGitBranch);
 private:
   CURL *m_curlHandle;
   std::string URLEncode (std::string strURL);

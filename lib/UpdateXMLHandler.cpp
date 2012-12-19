@@ -44,7 +44,7 @@ CUpdateXMLHandler::CUpdateXMLHandler()
 CUpdateXMLHandler::~CUpdateXMLHandler()
 {};
 
-bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::string, CXMLResdata> &mapResourceData)
+bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::string, CXMLResdata> &mapResourceData, std::string const &strTXProjectname)
 {
   std::string strURLXMLFile = strURL + "xbmc-txupdate.xml";
 
@@ -72,7 +72,7 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
     CLog::Log(logERROR, "UpdXMLHandler: No projectname specified in xbmc-txupdate.xml file. Cannot continue. "
                         "Please contact TeamXBMC about this problem!");
 
-    CLog::Log(logINFO, "Reading xbmc-txupdate.xml file fro project: %s", strProjName.c_str());
+    CLog::Log(logINFO, "Reading xbmc-txupdate.xml file for project: %s", strTXProjectname.c_str());
 
   std::string strMergedLangfileDir;
   if (!pRootElement->Attribute("merged_langfiledir") || (strMergedLangfileDir = pRootElement->Attribute("merged_langfiledir")) == "")
@@ -173,7 +173,8 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
       if (currResData.strTXResName.empty())
         CLog::Log(logERROR, "UpdXMLHandler: Transifex resource name is empty or missing for resource %s", strResName.c_str());
 
-      mapResourceData[strResName] = currResData;
+      currResData.strResNameFull = strTXProjectname + "/" + strResName;
+      mapResourceData[currResData.strResNameFull] = currResData;
     }
     pChildResElement = pChildResElement->NextSiblingElement("resource");
   }

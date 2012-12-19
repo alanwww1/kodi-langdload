@@ -37,6 +37,7 @@
 #include "lib/UpdateXMLHandler.h"
 #include "lib/ResourceHandler.h"
 #include "lib/FileUtils.h"
+#include "lib/JSONHandler.h"
 
 class CInputData
 {
@@ -130,7 +131,27 @@ int main(int argc, char* argv[])
     CUpdateXMLHandler UpdateXMLHandler;
     CResourceHandler ResourceHandler;
 
-    UpdateXMLHandler.DownloadXMLToMap("https://raw.github.com/xbmc/translations/master/translations/xbmc-main-frodo/", mapResourceData);
+    std::list<std::string> listTXProjects;
+    std::string strGithubURL, strGithubBranch;
+    strGithubURL = "https://raw.github.com/xbmc/translations/master/translations/";
+    g_HTTPHandler.GetGithubAPIURLFromURL(strGithubURL, strGithubBranch);
+
+    std::string strtemp = g_HTTPHandler.GetURLToSTR(strGithubURL + "?ref=" + strGithubBranch);
+
+    if (strtemp.empty())
+      CLog::Log(logERROR, "Error getting TX project list from xbmc translation github repo");
+
+    char cstrtemp[strtemp.size()];
+    strcpy(cstrtemp, strtemp.c_str());
+
+    listTXProjects = g_Json.ParseAvailDirsGITHUB(strtemp);
+    std::string strListProjects;
+
+    for (std::list<std::string>::iterator it = listTXProjects.begin(); it != listTXProjects.end(); it++)
+    {
+      UpdateXMLHandler.DownloadXMLToMap("https://raw.github.com/xbmc/translations/master/translations/" + *it + "/", mapResourceData, *it);
+    }
+    CLog::Log(logINFO, "Detected a total %i resources hosted in %i projects at xbmc/translations Github repo", mapResourceData.size(), listTXProjects.size());
 
     for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
     {

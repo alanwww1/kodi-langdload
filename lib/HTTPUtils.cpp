@@ -137,18 +137,9 @@ void CHTTPHandler::AddToURL (std::string &strURL, std::string strAddendum)
 
 std::string CHTTPHandler::GetGithubAPIURL (CXMLResdata const &XMLResdata)
 {
-  size_t pos1, pos2, pos3;
   std::string strGitHubURL, strGitBranch;
-  if (XMLResdata.strTranslationrepoURL.find("raw.github.com/") == std::string::npos)
-    CLog::Log(logERROR, "ResHandler: Wrong Github URL format");
-  pos1 = XMLResdata.strTranslationrepoURL.find("raw.github.com/")+15;
-  pos2 = XMLResdata.strTranslationrepoURL.find("/", pos1+1);
-  pos2 = XMLResdata.strTranslationrepoURL.find("/", pos2+1);
-  pos3 = XMLResdata.strTranslationrepoURL.find("/", pos2+1);
-  strGitHubURL = "https://api.github.com/repos/" + XMLResdata.strTranslationrepoURL.substr(pos1, pos2-pos1);
-  strGitHubURL += "/contents";
-  strGitHubURL += XMLResdata.strTranslationrepoURL.substr(pos3, XMLResdata.strTranslationrepoURL.size() - pos3 - 1);
-  strGitBranch = XMLResdata.strTranslationrepoURL.substr(pos2+1, pos3-pos2-1);
+  strGitHubURL = XMLResdata.strTranslationrepoURL;
+  GetGithubAPIURLFromURL(strGitHubURL, strGitBranch);
 
   AddToURL(strGitHubURL, XMLResdata.strMergedLangfileDir);
   AddToURL(strGitHubURL, XMLResdata.strResDirectory);
@@ -163,4 +154,21 @@ std::string CHTTPHandler::GetGithubAPIURL (CXMLResdata const &XMLResdata)
 
   strGitHubURL += "?ref=" + strGitBranch;
   return strGitHubURL;
+}
+
+void CHTTPHandler::GetGithubAPIURLFromURL (std::string &strUrl, std::string &strGitBranch)
+{
+  size_t pos1, pos2, pos3;
+  std::string strGitHubURL;
+  if (strUrl.find("raw.github.com/") == std::string::npos)
+    CLog::Log(logERROR, "ResHandler: Wrong Github URL format");
+  pos1 = strUrl.find("raw.github.com/")+15;
+  pos2 = strUrl.find("/", pos1+1);
+  pos2 = strUrl.find("/", pos2+1);
+  pos3 = strUrl.find("/", pos2+1);
+  strGitHubURL = "https://api.github.com/repos/" + strUrl.substr(pos1, pos2-pos1);
+  strGitHubURL += "/contents";
+  strGitHubURL += strUrl.substr(pos3, strUrl.size() - pos3 - 1);
+  strGitBranch = strUrl.substr(pos2+1, pos3-pos2-1);
+  strUrl = strGitHubURL;
 }

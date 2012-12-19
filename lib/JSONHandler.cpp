@@ -35,7 +35,7 @@ CJSONHandler::~CJSONHandler()
 {};
 
 
-std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJSON)
+std::list<std::string> CJSONHandler::ParseAvailDirsGITHUB(std::string strJSON)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
@@ -44,7 +44,7 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJS
 
   bool parsingSuccessful = reader.parse(strJSON, root );
   if ( !parsingSuccessful )
-    CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+    CLog::Log(logERROR, "CJSONHandler::ParseAvailDirsGITHUB: no valid JSON data downloaded from Github");
 
   const Json::Value JLangs = root;
 
@@ -53,15 +53,15 @@ std::list<std::string> CJSONHandler::ParseAvailLanguagesGITHUB(std::string strJS
     Json::Value JValu = *itr;
     std::string strType =JValu.get("type", "unknown").asString();
     if (strType == "unknown")
-      CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailDirsGITHUB: no valid JSON data downloaded from Github");
     else if (strType != "dir")
     {
-      CLog::Log(logWARNING, "CJSONHandler::ParseAvailLanguagesGITHUB: unknown file found in language directory");
+      CLog::Log(logWARNING, "CJSONHandler::ParseAvailDirsGITHUB: unknown file found in language directory");
       continue;
     }
     lang =JValu.get("name", "unknown").asString();
     if (strType == "unknown")
-      CLog::Log(logERROR, "CJSONHandler::ParseAvailLanguagesGITHUB: no valid JSON data downloaded from Github");
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailDirsGITHUB: no valid JSON data downloaded from Github");
     listLangs.push_back(lang);
   };
 

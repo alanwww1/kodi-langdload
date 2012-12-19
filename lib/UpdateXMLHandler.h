@@ -34,6 +34,7 @@ public:
   std::string strTranslationrepoURL;
   std::string strUpstreamURL;
   std::string strProjName;
+  std::string strResNameFull;
   std::string strMergedLangfileDir;
   std::string strLangsFromUpstream;
   int Restype;
@@ -55,5 +56,5 @@ class CUpdateXMLHandler
 public:
   CUpdateXMLHandler();
   ~CUpdateXMLHandler();
-  bool DownloadXMLToMap (std::string strURL, std::map<std::string, CXMLResdata> &mapResourceData);
+  bool DownloadXMLToMap (std::string strURL, std::map<std::string, CXMLResdata> &mapResourceData, std::string const &strTXProjectname);
 };

@@ -40,8 +40,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
   g_HTTPHandler.Cleanup();
   g_HTTPHandler.ReInit();
 
-  CLog::Log(logINFO, "ResHandler: Starting to download resource: %s",XMLResdata.strResName.c_str());
-  std::string strLogMessage = "DOWNLOADING RESOURCE: " + XMLResdata.strResName + " FROM XBMC REPO";
+  std::string strLogMessage = "DOWNLOADING RESOURCE: " + XMLResdata.strResNameFull + " FROM XBMC REPO";
   std::string strLogHeader;
   strLogHeader.resize(strLogMessage.size(), '*');
   CLog::Log(logLINEFEED, "");
@@ -65,7 +64,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
     strFilename += XMLResdata.strAddonXMLSuffix;
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
-    CLog::Log(logINFO, "ResHandler: addon.xml downloaded for resource: %s",XMLResdata.strResName.c_str());
+    CLog::Log(logINFO, "ResHandler: addon.xml downloaded for resource: %s",XMLResdata.strResNameFull.c_str());
   }
 
   if (XMLResdata.bHasChangelog && XMLResdata.Restype != CORE)
@@ -81,7 +80,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
     g_File.AddToFilename(strFilename, XMLResdata.strLogFilename);
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
-    CLog::Log(logINFO, "ResHandler: changelog.txt downloaded for resource: %s",XMLResdata.strResName.c_str());
+    CLog::Log(logINFO, "ResHandler: changelog.txt downloaded for resource: %s",XMLResdata.strResNameFull.c_str());
   }
 
   if (XMLResdata.Restype == ADDON_NOSTRINGS)
@@ -97,7 +96,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
   char cstrtemp[strtemp.size()];
   strcpy(cstrtemp, strtemp.c_str());
 
-  listLangs = g_Json.ParseAvailLanguagesGITHUB(strtemp);
+  listLangs = g_Json.ParseAvailDirsGITHUB(strtemp);
 
   std::string strDloadURLPre = XMLResdata.strTranslationrepoURL;
   g_HTTPHandler.AddToURL(strDloadURLPre, XMLResdata.strMergedLangfileDir);
