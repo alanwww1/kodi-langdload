@@ -23,8 +23,21 @@
 #include "TinyXML/tinyxml.h"
 #include <string>
 #include <map>
+#include <list>
 
 const std::string DEFAULTMERGEDLANGDIR = "merged-langfiles";
+
+class CInputData
+{
+public:
+  CInputData();
+  ~CInputData();
+  std::string strAddonName;
+  std::string strAddonDir;
+  std::string strGittemplate;
+  bool bSkipChangelog;
+  bool bSkipEnglishFile;
+};
 
 class CXMLResdata
 {
@@ -49,6 +62,8 @@ public:
   std::string strResLocalDirectory;
   std::string strResName;
   bool bWritePO, bWriteXML, bHasChangelog;
+  bool bSkipChangelog;
+  bool bSkipEnglishFile;
 };
 
 class CUpdateXMLHandler
@@ -57,4 +72,12 @@ public:
   CUpdateXMLHandler();
   ~CUpdateXMLHandler();
   bool DownloadXMLToMap (std::string strURL, std::map<std::string, CXMLResdata> &mapResourceData, std::string const &strTXProjectname);
+};
+
+class CInputXMLHandler
+{
+public:
+  CInputXMLHandler();
+  ~CInputXMLHandler();
+  std::list<CInputData> ReadXMLToMem (std::string strFileName);
 };

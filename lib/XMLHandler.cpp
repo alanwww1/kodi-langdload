@@ -22,6 +22,8 @@
 #include "XMLHandler.h"
 #include "Log.h"
 #include "HTTPUtils.h"
+#include "FileUtils.h"
+#include <list>
 
 using namespace std;
 
@@ -33,9 +35,20 @@ CXMLResdata::CXMLResdata()
   bHasChangelog = true;
   strLogFormat = "[B]%i[/B]\n\n- Updated language files from Transifex\n\n";
   strLogFilename = "changelog.txt";
+  bSkipChangelog = false;
+  bSkipEnglishFile = false;
 }
 
 CXMLResdata::~CXMLResdata()
+{}
+
+CInputData::CInputData()
+{
+  bSkipChangelog = false;
+  bSkipEnglishFile =false;
+}
+
+CInputData::~CInputData()
 {}
 
 CUpdateXMLHandler::CUpdateXMLHandler()
@@ -50,26 +63,26 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
 
   std::string strXMLFile = g_HTTPHandler.GetURLToSTR(strURLXMLFile);
   if (strXMLFile.empty())
-    CLog::Log(logERROR, "CAddonXMLHandler::FetchAddonXMLFileUpstr: http error getting XML file from upstream url: %s", strURL.c_str());
+    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: http error getting XML file from upstream url: %s", strURL.c_str());
 
   TiXmlDocument xmlUpdateXML;
 
   if (!xmlUpdateXML.Parse(strXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
-    CLog::Log(logERROR, "UpdateXMLHandler::DownloadXMLToMem: UpdateXML file problem: %s %s\n", xmlUpdateXML.ErrorDesc(), strURL.c_str());
+    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: UpdateXML file problem: %s %s\n", xmlUpdateXML.ErrorDesc(), strURL.c_str());
     return false;
   }
 
   TiXmlElement* pRootElement = xmlUpdateXML.RootElement();
   if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="resources")
   {
-    CLog::Log(logERROR, "UpdXMLHandler: No root element called \"resources\" in xml file. Cannot continue. Please create it");
+    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: No root element called \"resources\" in xml file. Cannot continue. Please create it");
     return false;
   }
 
   std::string strProjName;
   if (!pRootElement->Attribute("projectname") || (strProjName = pRootElement->Attribute("projectname")) == "")
-    CLog::Log(logERROR, "UpdXMLHandler: No projectname specified in xbmc-txupdate.xml file. Cannot continue. "
+    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: No projectname specified in xbmc-txupdate.xml file. Cannot continue. "
                         "Please contact TeamXBMC about this problem!");
 
     CLog::Log(logINFO, "Reading xbmc-txupdate.xml file for project: %s", strTXProjectname.c_str());
@@ -81,7 +94,7 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
   if (!pChildResElement || pChildResElement->NoChildren())
   {
-    CLog::Log(logERROR, "UpdXMLHandler: No xml element called \"resource\" exists in the xml file. Please contact TeamXBMC about this problem!");
+    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: No xml element called \"resource\" exists in the xml file. Please contact TeamXBMC about this problem!");
     return false;
   }
 
@@ -96,7 +109,7 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
     std::string strResName;
     if (!pChildResElement->Attribute("name") || (strResName = pChildResElement->Attribute("name")) == "")
     {
-      CLog::Log(logERROR, "UpdXMLHandler: No name specified for resource. Cannot continue. Please contact TeamXBMC about this problem!");
+      CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: No name specified for resource. Cannot continue. Please contact TeamXBMC about this problem!");
       return false;
     }
 
@@ -108,7 +121,7 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
       if (pChildURLElement && pChildURLElement->FirstChild())
         currResData.strUpstreamURL = pChildURLElement->FirstChild()->Value();
       if (currResData.strUpstreamURL.empty())
-        CLog::Log(logERROR, "UpdXMLHandler: UpstreamURL entry is empty or missing for resource %s", strResName.c_str());
+        CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: UpstreamURL entry is empty or missing for resource %s", strResName.c_str());
       if (pChildURLElement->Attribute("filetype"))
         currResData.strLangFileType = pChildURLElement->Attribute("filetype"); // For PO no need to explicitly specify. Only for XML.
       if (pChildURLElement->Attribute("URLsuffix"))
@@ -149,7 +162,7 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
           currResData.Restype = CORE;
       }
       if (currResData.Restype == UNKNOWN)
-        CLog::Log(logERROR, "UpdXMLHandler: Unknown type found or missing resourceType field for resource %s", strResName.c_str());
+        CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: Unknown type found or missing resourceType field for resource %s", strResName.c_str());
 
       const TiXmlElement *pChildResDirElement = pChildResElement->FirstChildElement("resourceSubdir");
       if (pChildResDirElement && pChildResDirElement->FirstChild())
@@ -171,7 +184,7 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
       if (pChildTXNameElement && pChildTXNameElement->FirstChild())
         currResData.strTXResName = pChildTXNameElement->FirstChild()->Value();
       if (currResData.strTXResName.empty())
-        CLog::Log(logERROR, "UpdXMLHandler: Transifex resource name is empty or missing for resource %s", strResName.c_str());
+        CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: Transifex resource name is empty or missing for resource %s", strResName.c_str());
 
       currResData.strResNameFull = strTXProjectname + "/" + strResName;
       mapResourceData[currResData.strResNameFull] = currResData;
@@ -181,3 +194,69 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
 
   return true;
 };
+
+CInputXMLHandler::CInputXMLHandler()
+{}
+
+CInputXMLHandler::~CInputXMLHandler()
+{}
+
+std::list<CInputData> CInputXMLHandler::ReadXMLToMem(string strFileName)
+{
+  std::string strXMLFile = g_File.ReadFileToStr(strFileName);
+  if (strXMLFile.empty())
+    CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: http error getting XML file from path: %s", strFileName.c_str());
+
+  TiXmlDocument xmlUpdateXML;
+
+  if (!xmlUpdateXML.Parse(strXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
+    CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: UpdateXML file problem: %s %s\n", xmlUpdateXML.ErrorDesc(), strFileName.c_str());
+
+  TiXmlElement* pRootElement = xmlUpdateXML.RootElement();
+  if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="addonlist")
+    CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: No root element called \"addonlist\" in xml file. Cannot continue. Please create it");
+
+  const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("addon");
+  if (!pChildResElement || pChildResElement->NoChildren())
+    CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: No xml element called \"addon\" exists in the xml file. Please contact TeamXBMC about this problem!");
+
+  std::list<CInputData> listInputData;
+
+  while (pChildResElement && pChildResElement->FirstChild())
+  {
+    CInputData currInputData;
+
+    std::string strResName;
+    if (!pChildResElement->Attribute("name") || (strResName = pChildResElement->Attribute("name")) == "")
+      CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: No name specified for addon. Cannot continue.");
+
+    currInputData.strAddonName = strResName;
+
+    const TiXmlElement *pChildDirElement = pChildResElement->FirstChildElement("localdir");
+    if (pChildDirElement && pChildDirElement->FirstChild())
+      currInputData.strAddonDir = pChildDirElement->FirstChild()->Value();
+    if (currInputData.strAddonDir.empty())
+      CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: Local directory is missing for addon: %s", strResName.c_str());
+
+    std::string strBool;
+    const TiXmlElement *pChildSkipchlogElement = pChildResElement->FirstChildElement("skipchangelog");
+    if (pChildSkipchlogElement && pChildSkipchlogElement->FirstChild())
+      strBool = pChildSkipchlogElement->FirstChild()->Value();
+    currInputData.bSkipChangelog = (strBool == "true");
+
+    strBool.clear();
+    const TiXmlElement *pChildSkipenglishElement = pChildResElement->FirstChildElement("skipenglish");
+    if (pChildSkipenglishElement && pChildSkipenglishElement->FirstChild())
+      strBool = pChildSkipenglishElement->FirstChild()->Value();
+    currInputData.bSkipEnglishFile = (strBool == "true");
+
+    const TiXmlElement *pChildGittemplElement = pChildResElement->FirstChildElement("gittemplate");
+    if (pChildGittemplElement && pChildGittemplElement->FirstChild())
+      currInputData.strGittemplate = pChildGittemplElement->FirstChild()->Value();
+
+    listInputData.push_back(currInputData);
+
+    pChildResElement = pChildResElement->NextSiblingElement("addon");
+  }
+  return listInputData;
+}

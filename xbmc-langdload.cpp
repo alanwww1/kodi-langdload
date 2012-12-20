@@ -39,26 +39,6 @@
 #include "lib/FileUtils.h"
 #include "lib/JSONHandler.h"
 
-class CInputData
-{
-public:
-  CInputData();
-  ~CInputData();
-  std::string strAddonName;
-  std::string strAddonDir;
-  bool bDloadChangelog;
-  bool bDloadEnglishFile;
-};
-CInputData::CInputData()
-{
-  bDloadChangelog = true;
-  bDloadEnglishFile =true;
-}
-
-CInputData::~CInputData()
-{}
-
-
 using namespace std;
 
 void PrintUsage()
@@ -100,6 +80,7 @@ int main(int argc, char* argv[])
 
   std::list<CInputData> listInputData;
   CInputData InputData;
+  std::string strInputXMLPath;
 
   if (argc == 3)
   {
@@ -121,11 +102,29 @@ int main(int argc, char* argv[])
     }
     listInputData.push_back(InputData);
   }
+  else if (argc == 2)
+  {
+    if (argv[1])
+      strInputXMLPath = argv[1];
+  }
+  else
+  {
+    printf ("\nWrong number of argguments. Cannot continue\n\n");
+    return 1;
+  }
 
   try
   {
     CLog::Log(logINFO, "XBMC-LANGDLOAD v%s", VERSION.c_str());
     CLog::Log(logLINEFEED, "");
+
+    if (listInputData.empty())
+    {
+      if (strInputXMLPath.empty())
+        CLog::Log(logERROR, "Insufficient input data, cannot continue.");
+      CInputXMLHandler InputXMLHander;
+      listInputData = InputXMLHander.ReadXMLToMem(strInputXMLPath);
+    }
 
     std::map<std::string, CXMLResdata> mapResourceData;
     CUpdateXMLHandler UpdateXMLHandler;
@@ -156,6 +155,9 @@ int main(int argc, char* argv[])
       {
         CXMLResdata XMLResdata = mapResourceData[it->strAddonName];
         XMLResdata.strResLocalDirectory = it->strAddonDir;
+        XMLResdata.bSkipChangelog = it->bSkipChangelog;
+        XMLResdata.bSkipEnglishFile = it->bSkipEnglishFile;
+
         ResourceHandler.DloadLangFiles(XMLResdata);
       }
       else

@@ -67,7 +67,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
     CLog::Log(logINFO, "ResHandler: addon.xml downloaded for resource: %s",XMLResdata.strResNameFull.c_str());
   }
 
-  if (XMLResdata.bHasChangelog && XMLResdata.Restype != CORE)
+  if (!XMLResdata.bSkipChangelog && XMLResdata.bHasChangelog && XMLResdata.Restype != CORE)
   {
     std::string strDloadURL = XMLResdata.strTranslationrepoURL;
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strMergedLangfileDir);
@@ -110,6 +110,9 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
 
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
   {
+    if (XMLResdata.bSkipEnglishFile && *it == "English")
+      continue;
+
     printf (" %s", it->c_str());
 
     if (XMLResdata.bWriteXML)
