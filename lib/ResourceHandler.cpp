@@ -19,9 +19,9 @@
  *
  */
 
-#include "ResourceHandler.h"
 #include <list>
 #include <algorithm>
+#include "ResourceHandler.h"
 #include "JSONHandler.h"
 #include "HTTPUtils.h"
 #include "Log.h"

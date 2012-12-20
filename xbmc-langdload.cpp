@@ -45,24 +45,23 @@ void PrintUsage()
 {
   printf
   (
-  "Usage: xbmc-langdload ADDONID LOCALDIR\n\n"
-  "ADDONID: The id of the addon which is defined in the \"id\" tag in the addon.xml file\n"
-  "LOCALDIR: The local directory\n"
-
-  "            This will be the directory where your merged and transifex update files get generated.\n\n"
-  "Working modes:\n"
-  "     -d   Only download to local cache, without performing a merge.\n"
-  "     -dm  Download and create merged and tx update files, but no upload performed.\n"
-  "     -dmu Download, merge and upload the new files to transifex.\n"
-  "     -u   Only upload the previously prepared files. Note that this needs downlad and merge ran before.\n\n"
-  "     No working mode arguments used, performs as -dm\n\n"
+  "1.Easy mode\n"
+  "  Usage: xbmc-langdload PROJECTID/ADDONID LOCALDIR\n\n"
+  "  PROJECTID: The id of the project defined on the xbmc repo. eg. xbmc-main-frodo\n"
+  "  ADDONID: The id of the addon which is defined in the \"id\" tag in the addon.xml file\n"
+  "  LOCALDIR: The local directory to copy the files to. This is where the addon.xml file gets.\n\n"
+  "  Example: xbmc-langdload xbmc-addons/plugin.video.coolplugin /home/myname/somedir/\n\n"
+  "2.Batch mode with xml file usage:\n"
+  "  Usage: xbmc-langdload XMLFILE\n\n"
+  "  XMLFILE: The path and filename of the input XML file which holds the download data (check README for format)\n\n"
+  "  Example: xbmc-langdload ./xbmc-langdload.xml\n\n"
   );
   #ifdef _MSC_VER
   printf
   (
   "Note for Windows users: In case you have whitespace or any special character\n"
-  "in the directory argument, please use apostrophe around them. For example:\n"
-  "xbmc-txupdate.exe \"C:\\xbmc dir\\language\"\n"
+  "in the directory/file argument, please use apostrophe around them. For example:\n"
+  "xbmc-langdload.exe xbmc-skins/skin.essence \"C:\\xbmc dir\\language\"\n\n"
   );
   #endif
   return;
@@ -71,9 +70,9 @@ void PrintUsage()
 int main(int argc, char* argv[])
 {
   setbuf(stdout, NULL);
-  if (argc > 3 || argc == 0)
+  if (argc > 3 || argc == 1)
   {
-    printf ("\nArgument counr error\n\n");
+    printf ("\nArgument count error\n\n");
     PrintUsage();
     return 1;
   }
@@ -106,11 +105,6 @@ int main(int argc, char* argv[])
   {
     if (argv[1])
       strInputXMLPath = argv[1];
-  }
-  else
-  {
-    printf ("\nWrong number of argguments. Cannot continue\n\n");
-    return 1;
   }
 
   try

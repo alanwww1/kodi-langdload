@@ -63,6 +63,9 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
   printf("\n");
   va_end(va);
 
+  if (loglevel == logERROR)
+    throw 1;
+
   return;
 };
 
