@@ -209,7 +209,7 @@ std::string CFile::ReadFileToStr(std::string strFileName)
     CLog::Log(logERROR, "FileUtils: ReadFileToStr: unable to read file: %s", strFileName.c_str());
 
   fseek(file, 0, SEEK_END);
-  int64_t fileLength = ftell(file);
+  size_t fileLength = ftell(file);
   fseek(file, 0, SEEK_SET);
 
   strRead.resize(static_cast<size_t> (fileLength));
