@@ -93,9 +93,6 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
   if (strtemp.empty())
     CLog::Log(logERROR, "ResHandler::DloadLangFiles: error getting langfile list from xbmc translation github repo");
 
-  char cstrtemp[strtemp.size()];
-  strcpy(cstrtemp, strtemp.c_str());
-
   listLangs = g_Json.ParseAvailDirsGITHUB(strtemp);
 
   std::string strDloadURLPre = XMLResdata.strTranslationrepoURL;

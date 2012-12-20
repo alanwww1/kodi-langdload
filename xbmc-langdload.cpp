@@ -141,9 +141,6 @@ int main(int argc, char* argv[])
     if (strtemp.empty())
       CLog::Log(logERROR, "Error getting TX project list from xbmc translation github repo");
 
-    char cstrtemp[strtemp.size()];
-    strcpy(cstrtemp, strtemp.c_str());
-
     listTXProjects = g_Json.ParseAvailDirsGITHUB(strtemp);
     std::string strListProjects;
 
