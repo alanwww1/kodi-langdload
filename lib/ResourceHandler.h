@@ -21,7 +21,7 @@
 #pragma once
 
 #include <list>
-#include "UpdateXMLHandler.h"
+#include "XMLHandler.h"
 
 class CResourceHandler
 {

@@ -19,7 +19,7 @@
  *
  */
 
-#include "UpdateXMLHandler.h"
+#include "XMLHandler.h"
 #include "Log.h"
 #include "HTTPUtils.h"
 

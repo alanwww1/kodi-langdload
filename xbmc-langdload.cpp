@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include "lib/HTTPUtils.h"
 #include "lib/Log.h"
-#include "lib/UpdateXMLHandler.h"
+#include "lib/XMLHandler.h"
 #include "lib/ResourceHandler.h"
 #include "lib/FileUtils.h"
 #include "lib/JSONHandler.h"
@@ -158,6 +158,8 @@ int main(int argc, char* argv[])
         XMLResdata.strResLocalDirectory = it->strAddonDir;
         ResourceHandler.DloadLangFiles(XMLResdata);
       }
+      else
+        CLog::Log(logWARNING, "Addon name not found on xbmc github repository: %s", it->strAddonName.c_str());
     }
 
     std::string strLogMessage = "PROCESS FINISHED WITH " + g_File.IntToStr(CLog::GetWarnCount()) + " WARNINGS";

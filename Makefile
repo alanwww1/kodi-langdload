@@ -32,7 +32,7 @@ SRCS := lib/TinyXML/tinyxml.cpp lib/TinyXML/tinyxmlparser.cpp lib/TinyXML/tinyst
 lib/HTTPUtils.cpp \
 lib/FileUtils.cpp \
 lib/Log.cpp \
-lib/UpdateXMLHandler.cpp \
+lib/XMLHandler.cpp \
 lib/ResourceHandler.cpp \
 lib/JSONHandler.cpp \
 $(OUTPUT)
@@ -56,7 +56,7 @@ tinyxmlparser.o: tinyxmlparser.cpp tinyxmlparser.h
 tinyxmlerror.o: tinyxmlerror.cpp tinyxmlerror.h
 tinystr.o: tinystr.cpp tinystr.h
 FileUtils.o: FileUtils.h FileUtils.cpp Log.cpp Log.h
-UpdateXMLHandler.o: UpdateXMLHandler.h Log.cpp Log.h tinyxml.o
+XMLHandler.o: XMLHandler.h Log.cpp Log.h tinyxml.o
 HTTPUtils.o: HTTPUtils.h Log.h Log.cpp
 JSONHandler.o: JSONHandler.h JSONHandler.cpp
 ResourceHandler.o: ResourceHandler.h Log.cpp Log.h JSONHandler.o JSONHandler.h JSONHandler.cpp

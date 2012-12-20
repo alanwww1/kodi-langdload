@@ -27,7 +27,7 @@
 #include <string>
 #include <stdio.h>
 #include <curl/curl.h>
-#include "UpdateXMLHandler.h"
+#include "XMLHandler.h"
 
 enum
 {
