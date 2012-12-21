@@ -9,10 +9,10 @@ RANLIB := ranlib
 DEBUG_CXXFLAGS   := -Wall -Wno-format -g -DDEBUG
 RELEASE_CXXFLAGS := -Wall -Wno-unknown-pragmas -Wno-format -O3
 
-LIBS		 :=
+LIBS		 := -lcurl
 
-DEBUG_LDFLAGS    := -g -lcurl -ljsoncpp
-RELEASE_LDFLAGS  := -lcurl -ljsoncpp
+DEBUG_LDFLAGS    := -g
+RELEASE_LDFLAGS  :=
 
 ifeq (YES, ${DEBUG})
    CXXFLAGS     := ${DEBUG_CXXFLAGS}
@@ -22,7 +22,7 @@ else
    LDFLAGS      := ${RELEASE_LDFLAGS}
 endif
 
-INCS :=
+INCS := -I/home/atti/Dev/translations/xbmc-langdload/lib/Json-cpp/include
 
 OUTPUT := xbmc-langdload
 
@@ -35,6 +35,9 @@ lib/Log.cpp \
 lib/XMLHandler.cpp \
 lib/ResourceHandler.cpp \
 lib/JSONHandler.cpp \
+lib/Json-cpp/src/lib_json/json_reader.cpp \
+lib/Json-cpp/src/lib_json/json_value.cpp \
+lib/Json-cpp/src/lib_json/json_writer.cpp \
 $(OUTPUT)
 
 OBJS := $(addsuffix .o,$(basename ${SRCS}))
