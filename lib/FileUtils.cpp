@@ -29,8 +29,12 @@
 #include <sys/stat.h>
 #include <sstream>
 #include "Log.h"
+#ifdef _MSC_VER
+#include <Windows.h>
+#else
 #include <ftw.h>
 #include <unistd.h>
+#endif
 
 CFile g_File;
 
@@ -81,7 +85,7 @@ bool CFile::FileExist(std::string filename)
   return true;
 };
 
-void CFile::DeleteFile(std::string filename)
+void CFile::DelFile(std::string filename)
 {
   if (!FileExist(filename))
     return;
@@ -174,7 +178,7 @@ std::string CFile::GetCurrMonthText()
   return strTimeCleaned;
 };
 
-void CFile::CopyFile(std::string strSourceFileName, std::string strDestFileName)
+void CFile::CpFile(std::string strSourceFileName, std::string strDestFileName)
 {
   ifstream source(strSourceFileName.c_str(), std::ios::binary);
   ofstream dest(strDestFileName.c_str(), std::ios::binary);
@@ -191,7 +195,7 @@ size_t CFile::GetFileAge(std::string strFileName)
   if (!stat(strFileName.c_str(), &b)) 
   {
     time_t now = std::time(0);
-    return now-b.st_mtime;
+    return static_cast<size_t>(now-b.st_mtime);
   }
   else
   {
@@ -293,9 +297,13 @@ int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW
   return rv;
 }
 
-int CFile::DeleteDirectory(std::string strDirPath)
+int CFile::DelDirectory(std::string strDirPath)
 {
+#ifdef _MSC_VER
+  return RemoveDirectory(strDirPath.c_str());
+#else
   return nftw(strDirPath.c_str(), unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
+#endif
 }
 
 void CFile::AddToFilename (std::string &strFilename, std::string strAddendum)

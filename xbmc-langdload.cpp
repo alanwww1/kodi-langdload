@@ -20,10 +20,6 @@
  */
 
 #ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-#if defined( WIN32 ) && defined( TUNE )
   #include <crtdbg.h>
   _CrtMemState startMemState;
   _CrtMemState endMemState;

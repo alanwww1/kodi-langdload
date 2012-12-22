@@ -45,7 +45,16 @@
     <ClCompile Include="..\lib\TinyXML\tinyxmlparser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\UpdateXMLHandler.cpp">
+    <ClCompile Include="..\lib\XMLHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Json-cpp\src\lib_json\json_reader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Json-cpp\src\lib_json\json_value.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\Json-cpp\src\lib_json\json_writer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,7 +80,10 @@
     <ClInclude Include="..\lib\ResourceHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\UpdateXMLHandler.h">
+    <ClInclude Include="..\lib\XMLHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\Json-cpp\include\json\json.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
