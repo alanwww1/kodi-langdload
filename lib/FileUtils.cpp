@@ -69,7 +69,7 @@ bool CFile::MakeOneDir(std::string Path)
 bool CFile::DirExists(std::string Path)
 {
   #ifdef _MSC_VER
-  return !(INVALID_FILE_ATTRIBUTES == GetFileAttributes(Path.c_str()) && GetLastError()==ERROR_FILE_NOT_FOUND);
+  return (GetFileAttributes(Path.c_str()) == FILE_ATTRIBUTE_DIRECTORY);
   #else 
   struct stat st;
   return (stat(Path.c_str(), &st) == 0);
