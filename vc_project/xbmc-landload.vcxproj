@@ -38,7 +38,7 @@
     <ClInclude Include="..\lib\XMLHandler.h" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="libCurl\curl\builds\libcurl-vc10-x86-release-static-ssl-static-ipv6-sspi-spnego\lib\libcurl_a.lib" />
+    <Library Include="libCurl\lib\libcurl_a.lib" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3E26BECA-6395-4F4A-ABF2-77FB50B6B9BA}</ProjectGuid>
@@ -69,7 +69,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;libCurl\include;..\lib\Json-cpp\include;libCurl\curl\builds\libcurl-vc10-x86-release-static-ssl-static-ipv6-sspi-spnego\include</IncludePath>
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;libCurl\include;..\lib\Json-cpp\include;libCurl\include</IncludePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib;</ReferencePath>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;</LibraryPath>
   </PropertyGroup>
@@ -89,6 +89,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:MSVCRT %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

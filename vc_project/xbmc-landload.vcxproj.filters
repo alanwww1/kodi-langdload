@@ -88,7 +88,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="libCurl\curl\builds\libcurl-vc10-x86-release-static-ssl-static-ipv6-sspi-spnego\lib\libcurl_a.lib">
+    <Library Include="libCurl\lib\libcurl_a.lib">
       <Filter>Resource Files</Filter>
     </Library>
   </ItemGroup>
