@@ -7,19 +7,23 @@ Downloader utility to help addon developers, pulling XBMC translations from XBMC
 
 **1.Simple mode**
 
-  **xbmc-langdload PROJECTID/ADDONID LOCALDIR**
+  **xbmc-langdload PROJECTID/ADDONID LOCALDIR [options]**
 
   * **PROJECTID:** The id of the project defined on the xbmc repo. eg. xbmc-main-frodo
   * **ADDONID:** The id of the addon which is defined in the "id" tag in the addon.xml file
   * **LOCALDIR:** The local directory to copy the files to. This is where the addon.xml file gets.
+  * **options:**
+    * -c:  skip download of changelog.txt (not recommended)
+    * -e:  skip download of cleaned English language file (not recommended)
+    * -ce: combination of the two above
 
   * Example: xbmc-langdload xbmc-addons/plugin.video.coolplugin /home/myname/somedir/
 
 **2.Batch mode with xml file usage**
 
   In batch mode you can download the language files for multiple addons.
-  You can also use advanced options, like skip the download of the English file, or skip download of changelog.txt.
-  Skipping download of any files is NOT recommended.
+  You can still use the advanced options, like skip the download of the English file, or skip download of changelog.txt.
+  Skipping download of any files is NOT recommended by the way.
 
   **xbmc-langdload XMLFILE**
 

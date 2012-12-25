@@ -140,8 +140,11 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata XMLResdata)
       g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);   
     }
   }
+  int langcount = listLangs.size();
+  if (XMLResdata.bSkipEnglishFile)
+    langcount--;
   printf ("\n\n");
-  CLog::Log(logINFO, "ResHandler: %i language files were downloaded for resource: %s",listLangs.size(), XMLResdata.strResName.c_str());
+  CLog::Log(logINFO, "ResHandler: %i language files were downloaded for resource: %s",langcount, XMLResdata.strResName.c_str());
   CLog::DecIdent(2);
 
   return true;

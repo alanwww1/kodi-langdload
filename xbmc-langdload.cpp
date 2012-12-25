@@ -66,7 +66,7 @@ void PrintUsage()
 int main(int argc, char* argv[])
 {
   setbuf(stdout, NULL);
-  if (argc > 3 || argc == 1)
+  if (argc > 4 || argc == 1)
   {
     printf ("\nUsage:\n\n");
     PrintUsage();
@@ -78,13 +78,16 @@ int main(int argc, char* argv[])
   std::string strInputXMLPath;
   bool bListAddonsMode = false;
 
-  if (argc == 3)
+  if (argc == 3 || argc ==4 )
   {
-    std::string strArg1, strArg2;
+    std::string strArg1, strArg2, strArg3;
     if (argv[1])
       strArg1 = argv[1];
     if (argv[2])
       strArg2 = argv[2];
+    if (argc ==4 && argv[3])
+      strArg3 = argv[3];
+
 
     if (strArg1 == "list" && strArg2 == "addons")
       bListAddonsMode = true;
@@ -104,6 +107,14 @@ int main(int argc, char* argv[])
         printf ("\nMissing or empty addonname, stopping.\n\n");
         PrintUsage();
         return 1;
+      }
+
+      if (!strArg3.empty() && strArg3.at(0) == '-')
+      {
+        if (strArg3.find("c") != std::string::npos)
+          InputData.bSkipChangelog = true;
+        if (strArg3.find("e") != std::string::npos)
+          InputData.bSkipEnglishFile = true;
       }
       listInputData.push_back(InputData);
     }
