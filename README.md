@@ -7,12 +7,13 @@ Downloader utility to help addon developers, pulling XBMC translations from XBMC
 
 **1.Simple mode**
 
-  Usage: xbmc-langdload PROJECTID/ADDONID LOCALDIR
-  PROJECTID: The id of the project defined on the xbmc repo. eg. xbmc-main-frodo
-  ADDONID: The id of the addon which is defined in the "id" tag in the addon.xml file
-  LOCALDIR: The local directory to copy the files to. This is where the addon.xml file gets.
+  **xbmc-langdload PROJECTID/ADDONID LOCALDIR**
 
-  Example: xbmc-langdload xbmc-addons/plugin.video.coolplugin /home/myname/somedir/
+  * **PROJECTID:** The id of the project defined on the xbmc repo. eg. xbmc-main-frodo
+  * **ADDONID:** The id of the addon which is defined in the "id" tag in the addon.xml file
+  * **LOCALDIR:** The local directory to copy the files to. This is where the addon.xml file gets.
+
+  * Example: xbmc-langdload xbmc-addons/plugin.video.coolplugin /home/myname/somedir/
 
 **2.Batch mode with xml file usage**
 
@@ -20,10 +21,11 @@ Downloader utility to help addon developers, pulling XBMC translations from XBMC
   You can also use advanced options, like skip the download of the English file, or skip download of changelog.txt.
   Skipping download of any files is NOT recommended.
 
-  Usage: xbmc-langdload XMLFILE
-  XMLFILE: The path and filename of the input XML file which holds the download data (check README for format)
+  **xbmc-langdload XMLFILE**
 
-  Example: xbmc-langdload xbmc-langdload.xml
+  * **XMLFILE:** The path and filename of the input XML file which holds the download data (check README for format)
+
+  * Example: xbmc-langdload xbmc-langdload.xml
 
 xbmc-langdload.xml example (linux):
 ```xml
@@ -41,7 +43,7 @@ xbmc-langdload.xml example (linux):
         <skipenglish>true</skipenglish>
     </addon>
 </addonlist>
-```xml
+```
 (For windows of course you have to use backslash in the directory name)
 
 ## Install
@@ -56,9 +58,12 @@ Ubuntu prerequisites installation:
 ```
 sudo apt-get install build-essential curl libcurl4-gnutls-dev libjsoncpp0 libjsoncpp-dev git
 ```
+
 After git cloning the utility, simply run:
+```
 make
 sudo make install
+```
 
 **Windows**
 Just download the precompiled exe file and run it in a command prompt.
@@ -67,7 +72,9 @@ Just download the precompiled exe file and run it in a command prompt.
 
 Note for Windows users: In case you have whitespace or any special character
 in the directory/file argument, please use apostrophe around them. For example:
+```
 xbmc-langdload.exe xbmc-skins/skin.essence "C:\some dir\"
+```
 
 For any questions, please write to: alanwww1@xbmc.org
 
