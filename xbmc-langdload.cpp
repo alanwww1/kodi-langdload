@@ -76,26 +76,37 @@ int main(int argc, char* argv[])
   std::list<CInputData> listInputData;
   CInputData InputData;
   std::string strInputXMLPath;
+  bool bListAddonsMode = false;
 
   if (argc == 3)
   {
+    std::string strArg1, strArg2;
     if (argv[1])
-      InputData.strAddonName = argv[1];
+      strArg1 = argv[1];
     if (argv[2])
-      InputData.strAddonDir = argv[2];
-    if (InputData.strAddonDir.empty())
+      strArg2 = argv[2];
+
+    if (strArg1 == "list" && strArg2 == "addons")
+      bListAddonsMode = true;
+    else
     {
-      printf ("\nMissing or empty addon directory, stopping.\n\n");
-      PrintUsage();
-      return 1;
+      InputData.strAddonName = strArg1;
+      InputData.strAddonDir = strArg2;
+
+      if (InputData.strAddonDir.empty())
+      {
+        printf ("\nMissing or empty addon directory, stopping.\n\n");
+        PrintUsage();
+        return 1;
+      }
+      if (InputData.strAddonName.empty())
+      {
+        printf ("\nMissing or empty addonname, stopping.\n\n");
+        PrintUsage();
+        return 1;
+      }
+      listInputData.push_back(InputData);
     }
-    if (InputData.strAddonName.empty())
-    {
-      printf ("\nMissing or empty addonname, stopping.\n\n");
-      PrintUsage();
-      return 1;
-    }
-    listInputData.push_back(InputData);
   }
   else if (argc == 2)
   {
@@ -108,7 +119,7 @@ int main(int argc, char* argv[])
     CLog::Log(logINFO, "XBMC-LANGDLOAD v%s", VERSION.c_str());
     CLog::Log(logLINEFEED, "");
 
-    if (listInputData.empty())
+    if (!bListAddonsMode && listInputData.empty())
     {
       if (strInputXMLPath.empty())
         CLog::Log(logERROR, "Insufficient input data, cannot continue.");
@@ -153,6 +164,16 @@ int main(int argc, char* argv[])
       else
         CLog::Log(logWARNING, "Addon name not found on xbmc github repository: %s", it->strAddonName.c_str());
     }
+
+    if (bListAddonsMode)
+    {
+      printf("\n"); 
+      for (std::map<std::string, CXMLResdata>::iterator it = mapResourceData.begin(); it != mapResourceData.end(); it++)
+      {
+        printf ("                                %s (%s%s%s )\n", it->first.c_str(), it->second.bWritePO? " PO":"",
+                it->second.bWriteXML? " XML":"", it->second.bHasChangelog? " changelog.txt":"");
+      }
+    }   
 
     std::string strLogMessage = "PROCESS FINISHED WITH " + g_File.IntToStr(CLog::GetWarnCount()) + " WARNINGS";
     std::string strLogHeader;

@@ -23,7 +23,7 @@ Downloader utility to help addon developers, pulling XBMC translations from XBMC
 
   **xbmc-langdload XMLFILE**
 
-  * **XMLFILE:** The path and filename of the input XML file which holds the download data (check README for format)
+  * **XMLFILE:** The path and filename of the input XML file which holds the download data
 
   * Example: xbmc-langdload xbmc-langdload.xml
 
@@ -45,6 +45,13 @@ xbmc-langdload.xml example (linux):
 </addonlist>
 ```
 (For windows of course you have to use backslash in the directory name)
+
+**3.List addons mode**
+
+  In this mode you can fetch a current list of the available hosted addons on xbmc translations github repo.
+  This list also shows what language fileformat is used (XML or PO) and if the addon has a changelog.txt hosted.
+
+  **xbmc-langdload addon list**
 
 ## Install
 
