@@ -41,7 +41,7 @@ void PrintUsage()
 {
   printf
   (
-  "1.Easy mode\n"
+  "1.Simple mode\n"
   "  Usage: xbmc-langdload PROJECTID/ADDONID LOCALDIR\n\n"
   "  PROJECTID: The id of the project defined on the xbmc repo. eg. xbmc-main-frodo\n"
   "  ADDONID: The id of the addon which is defined in the \"id\" tag in the addon.xml file\n"
@@ -50,14 +50,14 @@ void PrintUsage()
   "2.Batch mode with xml file usage:\n"
   "  Usage: xbmc-langdload XMLFILE\n\n"
   "  XMLFILE: The path and filename of the input XML file which holds the download data (check README for format)\n\n"
-  "  Example: xbmc-langdload ./xbmc-langdload.xml\n\n"
+  "  Example: xbmc-langdload xbmc-langdload.xml\n\n"
   );
   #ifdef _MSC_VER
   printf
   (
   "Note for Windows users: In case you have whitespace or any special character\n"
   "in the directory/file argument, please use apostrophe around them. For example:\n"
-  "xbmc-langdload.exe xbmc-skins/skin.essence \"C:\\somedir\\\"\n\n"
+  "xbmc-langdload.exe xbmc-skins/skin.essence \"C:\\some dir\\\"\n\n"
   );
   #endif
   return;
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
   setbuf(stdout, NULL);
   if (argc > 3 || argc == 1)
   {
-    printf ("\nArgument count error\n\n");
+    printf ("\nUsage:\n\n");
     PrintUsage();
     return 1;
   }

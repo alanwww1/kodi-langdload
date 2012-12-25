@@ -1,11 +1,11 @@
 xbmc-langdload
 ==============
 
-Downloader utility to help pulling XBMC translations from XBMC translations github repo to local repos.
+Downloader utility to help addon developers, pulling XBMC translations from XBMC translations github repo, to local direectories.
 
-Usage:
+## Usage
 
-1.Easy mode
+**1.Simple mode**
 
   Usage: xbmc-langdload PROJECTID/ADDONID LOCALDIR
   PROJECTID: The id of the project defined on the xbmc repo. eg. xbmc-main-frodo
@@ -14,13 +14,61 @@ Usage:
 
   Example: xbmc-langdload xbmc-addons/plugin.video.coolplugin /home/myname/somedir/
 
-2.Batch mode with xml file usage
+**2.Batch mode with xml file usage**
+
+  In batch mode you can download the language files for multiple addons.
+  You can also use advanced options, like skip the download of the English file, or skip download of changelog.txt.
+  Skipping download of any files is NOT recommended.
 
   Usage: xbmc-langdload XMLFILE
   XMLFILE: The path and filename of the input XML file which holds the download data (check README for format)
 
-  Example: xbmc-langdload ./xbmc-langdload.xml
+  Example: xbmc-langdload xbmc-langdload.xml
+
+xbmc-langdload.xml example (linux):
+```xml
+<?xml version="1.0" ?>
+<addonlist>
+    <addon name="xbmc-addons/plugin.video.coolvideoplugin">
+        <localdir>/home/user/dir/coolvideplugin</localdir>
+    </addon>
+    <addon name="xbmc-skins/skin.coolskin">
+        <localdir>skin-coolskin</localdir>
+    </addon>
+        <addon name="xbmc-skins/skin.coolerskin">
+        <localdir>skin-coolerskin</localdir>
+        <skipchangelog>true</skipchangelog>
+        <skipenglish>true</skipenglish>
+    </addon>
+</addonlist>
+```xml
+(For windows of course you have to use backslash in the directory name)
+
+## Install
+
+Requirements:
+* OS: Linux, Windows
+
+**Linux**
+Needed packages: curl, libcurl, libjsoncpp and the developer packages
+
+Ubuntu prerequisites installation:
+```
+sudo apt-get install build-essential curl libcurl4-gnutls-dev libjsoncpp0 libjsoncpp-dev git
+```
+After git cloning the utility, simply run:
+make
+sudo make install
+
+**Windows**
+Just download the precompiled exe file and run it in a command prompt.
+
+## Support
 
 Note for Windows users: In case you have whitespace or any special character
 in the directory/file argument, please use apostrophe around them. For example:
-xbmc-langdload.exe xbmc-skins/skin.essence "C:\somedir\"
+xbmc-langdload.exe xbmc-skins/skin.essence "C:\some dir\"
+
+For any questions, please write to: alanwww1@xbmc.org
+
+2012 Attila Jakosa, Team XBMC
