@@ -55,7 +55,7 @@ xbmc-langdload.xml example (linux):
   In this mode you can fetch a current list of the available hosted addons on xbmc translations github repo.
   This list also shows what language fileformat is used (XML or PO) and if the addon has a changelog.txt hosted.
 
-  **xbmc-langdload addon list**
+  **xbmc-langdload list addons**
 
 ## Install
 

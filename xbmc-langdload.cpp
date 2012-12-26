@@ -51,6 +51,10 @@ void PrintUsage()
   "  Usage: xbmc-langdload XMLFILE\n\n"
   "  XMLFILE: The path and filename of the input XML file which holds the download data (check README for format)\n\n"
   "  Example: xbmc-langdload xbmc-langdload.xml\n\n"
+  "3.List addons mode:\n"
+  "  Usage: xbmc-langdload list addons\n\n"
+  "  In this mode you can fetch a current list of the available hosted addons on xbmc translations github repo.\n"
+  "  This list also shows what language fileformat is used (XML or PO) and if the addon has a changelog.txt hosted.\n\n"
   );
   #ifdef _MSC_VER
   printf
@@ -104,7 +108,7 @@ int main(int argc, char* argv[])
       }
       if (InputData.strAddonName.empty())
       {
-        printf ("\nMissing or empty addonname, stopping.\n\n");
+        printf ("\nMissing or empty addon name, stopping.\n\n");
         PrintUsage();
         return 1;
       }
@@ -199,6 +203,6 @@ int main(int argc, char* argv[])
   catch (const int calcError)
   {
     g_HTTPHandler.Cleanup();
-    return 0;
+    return calcError;
   }
 }
