@@ -88,7 +88,10 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   }
 
   if (XMLResdata.Restype == ADDON_NOSTRINGS)
+  {
+    CLog::DecIdent(2);
     return true;
+  }
 
   std::list<std::string> listLangs;
 
