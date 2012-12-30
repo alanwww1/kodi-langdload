@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
           std::string strCommand;
           strCommand += "cd " + XMLResdata.strResLocalDirectory + ";";
           strCommand += "git add -A `git rev-parse --show-toplevel`;";
-          strCommand += "git commit --porcelain -m \"" + strFormat + "\"";
+          strCommand += "git commit -m \"" + strFormat + "\"";
           CLog::Log(logINFO, "GIT commit with the following command: %s", strCommand.c_str());
           system (strCommand.c_str());
         }
