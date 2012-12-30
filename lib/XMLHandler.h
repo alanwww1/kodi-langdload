@@ -61,6 +61,8 @@ public:
   std::string strLogFilename;
   std::string strResLocalDirectory;
   std::string strResName;
+  std::string strGittemplate;
+  std::string strAddonVersion;
   bool bWritePO, bWriteXML, bHasChangelog;
   bool bSkipChangelog;
   bool bSkipEnglishFile;

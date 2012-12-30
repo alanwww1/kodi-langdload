@@ -28,6 +28,7 @@
 #include <string>
 #include <list>
 #include <stdio.h>
+#include <stdlib.h>
 #include "lib/HTTPUtils.h"
 #include "lib/Log.h"
 #include "lib/XMLHandler.h"
@@ -173,8 +174,26 @@ int main(int argc, char* argv[])
         XMLResdata.strResLocalDirectory = it->strAddonDir;
         XMLResdata.bSkipChangelog = it->bSkipChangelog;
         XMLResdata.bSkipEnglishFile = it->bSkipEnglishFile;
+        XMLResdata.strGittemplate = it->strGittemplate;
 
         ResourceHandler.DloadLangFiles(XMLResdata);
+
+        if (!XMLResdata.strGittemplate.empty())
+        {
+          size_t pos;
+          std::string strFormat = XMLResdata.strGittemplate;
+          if ((pos = strFormat.find("%v")) != std::string::npos)
+            strFormat.replace(pos, 2, XMLResdata.strAddonVersion.c_str());
+          if ((pos = strFormat.find("%n")) != std::string::npos)
+            strFormat.replace(pos, 2, XMLResdata.strResName.c_str());
+
+          std::string strCommand;
+          strCommand += "cd " + InputData.strAddonDir + ";";
+          strCommand += "git add -A `git rev-parse --show-toplevel`;";
+          strCommand += "git commit --porcelain -m \"" + strFormat + "\"";
+          CLog::Log(logINFO, "GIT commit with the following command: %s", strCommand.c_str());
+          system (strCommand.c_str());
+        }
       }
       else
         CLog::Log(logWARNING, "Addon name not found on xbmc github repository: %s", it->strAddonName.c_str());
@@ -188,7 +207,7 @@ int main(int argc, char* argv[])
         printf ("                                %s (%s%s%s )\n", it->first.c_str(), it->second.bWritePO? " PO":"",
                 it->second.bWriteXML? " XML":"", it->second.bHasChangelog? " changelog.txt":"");
       }
-    }   
+    }
 
     std::string strLogMessage = "PROCESS FINISHED WITH " + g_File.IntToStr(CLog::GetWarnCount()) + " WARNINGS";
     std::string strLogHeader;
