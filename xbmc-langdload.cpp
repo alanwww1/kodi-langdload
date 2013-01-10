@@ -175,6 +175,7 @@ int main(int argc, char* argv[])
         XMLResdata.bSkipChangelog = it->bSkipChangelog;
         XMLResdata.bSkipEnglishFile = it->bSkipEnglishFile;
         XMLResdata.strGittemplate = it->strGittemplate;
+        XMLResdata.strGitExecPath = it->strGitExecPath;
 
         ResourceHandler.DloadLangFiles(XMLResdata);
 
@@ -188,9 +189,17 @@ int main(int argc, char* argv[])
             strFormat.replace(pos, 2, XMLResdata.strResName.c_str());
 
           std::string strCommand;
-          strCommand += "cd " + XMLResdata.strResLocalDirectory + ";";
+          std::string strCDDirectory = XMLResdata.strResLocalDirectory;
+
+#ifdef _MSC_VER
+          strCommand += "cd " + strCDDirectory + " & ";
+          strCommand += "\"" + XMLResdata.strGitExecPath + "sh.exe\" --login -i -c \"git add -A `git rev-parse --show-toplevel`\" & ";
+          strCommand += "\"" + XMLResdata.strGitExecPath + "sh.exe\" --login -i -c \"git commit -m '" + strFormat + "'\"";
+#else
+          strCommand += "cd " + strCDDirectory + ";";
           strCommand += "git add -A `git rev-parse --show-toplevel`;";
           strCommand += "git commit -m \"" + strFormat + "\"";
+#endif
           CLog::Log(logINFO, "GIT commit with the following command: %s", strCommand.c_str());
           system (strCommand.c_str());
         }

@@ -71,7 +71,8 @@ bool CFile::DirExists(std::string Path)
   #ifdef _MSC_VER
   if (Path.size() == 3 && Path.at(1) == ':') // we found a drive
     return true;
-  return (GetFileAttributes(Path.c_str()) == FILE_ATTRIBUTE_DIRECTORY);
+  DWORD dwAttrib = GetFileAttributes(Path.c_str());
+  return (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
   #else 
   struct stat st;
   return (stat(Path.c_str(), &st) == 0);
