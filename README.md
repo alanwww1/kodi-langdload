@@ -57,7 +57,9 @@ xbmc-langdload.xml example (linux):
 For windows of course you have to use backslash in the directory name.
 The default search path for git-bash executables is C:\Program Files (x86)\Git\bin\
 to change that, just use attribute "gitexecpath" like this:
+```xml
 <gittemplate gitexecpath="C:\Program Files\NewGitDir\bin\">Updated addon %n to version %v</gittemplate>
+```
 
 **3.List addons mode**
 
