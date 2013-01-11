@@ -62,7 +62,9 @@ void PrintUsage()
   (
   "Note for Windows users: In case you have whitespace or any special character\n"
   "in the directory/file argument, please use apostrophe around them. For example:\n"
-  "xbmc-langdload.exe xbmc-skins/skin.essence \"C:\\some dir\\\"\n\n"
+  "xbmc-langdload.exe xbmc-skins/skin.essence \"C:\\some dir\\\"\n"
+  "Also make sure you have write access to the local directory.\n"
+  "Please run the command prompt in admin mode\n\n"
   );
   #endif
   return;
