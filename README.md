@@ -60,6 +60,7 @@ to change that, just use attribute "gitexecpath" like this:
 ```xml
 <gittemplate gitexecpath="C:\Program Files\NewGitDir\bin\">Updated addon %n to version %v</gittemplate>
 ```
+Currently only the official git client is supported. Download it from here: http://git-scm.com/downloads
 
 **3.List addons mode**
 
@@ -99,6 +100,7 @@ xbmc-langdload.exe xbmc-skins/skin.essence "C:\some dir\"
 ```
 Also make sure you have write access to the local directory!
 Please run the command prompt in admin mode!
+
 
 For any questions, please write to: alanwww1@xbmc.org
 
