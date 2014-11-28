@@ -178,6 +178,7 @@ int main(int argc, char* argv[])
         XMLResdata.bSkipEnglishFile = it->bSkipEnglishFile;
         XMLResdata.strGittemplate = it->strGittemplate;
         XMLResdata.strGitExecPath = it->strGitExecPath;
+        XMLResdata.bClearLangdir = it->bClearLangdir;
 
         ResourceHandler.DloadLangFiles(XMLResdata);
 

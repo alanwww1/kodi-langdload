@@ -113,6 +113,12 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   std::string strFilenamePre = XMLResdata.strResLocalDirectory;
   g_File.AddToFilename(strFilenamePre, GetLangDir(XMLResdata));
 
+  if (XMLResdata.bClearLangdir)
+  {
+    g_File.DelDirectory(strFilenamePre);
+    g_File.MakeDir(strFilenamePre);
+  }
+
   CLog::Log(logINFO, "ResHandler: Downloading language files:");
 
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)

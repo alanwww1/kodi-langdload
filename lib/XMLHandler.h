@@ -38,6 +38,7 @@ public:
   std::string strGitExecPath;
   bool bSkipChangelog;
   bool bSkipEnglishFile;
+  bool bClearLangdir;
 };
 
 class CXMLResdata
@@ -68,6 +69,7 @@ public:
   bool bWritePO, bWriteXML, bHasChangelog;
   bool bSkipChangelog;
   bool bSkipEnglishFile;
+  bool bClearLangdir;
 };
 
 class CUpdateXMLHandler
