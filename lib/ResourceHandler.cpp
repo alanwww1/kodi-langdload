@@ -26,6 +26,8 @@
 #include "HTTPUtils.h"
 #include "Log.h"
 #include "FileUtils.h"
+#include "LCode.h"
+#include "CharsetUtils.h"
 
 using namespace std;
 
@@ -49,19 +51,14 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   CLog::Log(logINFO, "%s", strLogHeader.c_str());
   CLog::IncIdent(2);
 
-  if (XMLResdata.Restype != CORE)
+  if (!XMLResdata.strUPSAddonURL.empty()) //we do have an addon.xml file existing
   {
     std::string strDloadURL = XMLResdata.strTranslationrepoURL;
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strMergedLangfileDir);
-    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strResDirectory);
-    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strResName);
-    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strDIRprefix);
-    g_HTTPHandler.AddToURL(strDloadURL, "addon.xml");
-    strDloadURL += XMLResdata.strAddonXMLSuffix;
+    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strLOCAddonPath);
 
     std::string strFilename = XMLResdata.strResLocalDirectory;
-    g_File.AddToFilename(strFilename, "addon.xml");
-    strFilename += XMLResdata.strAddonXMLSuffix;
+    g_File.AddToFilename(strFilename, XMLResdata.strLOCAddonPath);
 
     std::string strAddonXMLFile = g_HTTPHandler.GetURLToSTR(strDloadURL);
     if (!XMLResdata.strGittemplate.empty())
@@ -71,23 +68,20 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     CLog::Log(logINFO, "ResHandler: addon.xml downloaded for resource: %s",XMLResdata.strResNameFull.c_str());
   }
 
-  if (!XMLResdata.bSkipChangelog && XMLResdata.bHasChangelog && XMLResdata.Restype != CORE)
+  if (!XMLResdata.bSkipChangelog && !XMLResdata.strChangelogFormat.empty())
   {
     std::string strDloadURL = XMLResdata.strTranslationrepoURL;
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strMergedLangfileDir);
-    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strResDirectory);
-    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strResName);
-    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strDIRprefix);
-    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strLogFilename);
+    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strLOCChangelogPath);
 
     std::string strFilename = XMLResdata.strResLocalDirectory;
-    g_File.AddToFilename(strFilename, XMLResdata.strLogFilename);
+    g_File.AddToFilename(strFilename, XMLResdata.strLOCChangelogPath);
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
     CLog::Log(logINFO, "ResHandler: changelog.txt downloaded for resource: %s",XMLResdata.strResNameFull.c_str());
   }
 
-  if (XMLResdata.Restype == ADDON_NOSTRINGS)
+  if (XMLResdata.bHasOnlyAddonXML)
   {
     CLog::DecIdent(2);
     return true;
@@ -95,113 +89,53 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   std::list<std::string> listLangs;
 
-  std::string strtemp = g_HTTPHandler.GetURLToSTR(g_HTTPHandler.GetGithubAPIURL(XMLResdata));
+
+  std::string strtemp = g_HTTPHandler.GetURLToSTR(g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strTranslationrepoURL + XMLResdata.strLOCLangPathRoot));
 
   if (strtemp.empty())
     CLog::Log(logERROR, "ResHandler::DloadLangFiles: error getting langfile list from xbmc translation github repo");
 
   listLangs = g_Json.ParseAvailDirsGITHUB(strtemp);
 
-  std::string strDloadURLPre = XMLResdata.strTranslationrepoURL;
-  g_HTTPHandler.AddToURL(strDloadURLPre, XMLResdata.strMergedLangfileDir);
-  g_HTTPHandler.AddToURL(strDloadURLPre, XMLResdata.strResDirectory);
-  if (XMLResdata.Restype != CORE)
-    g_HTTPHandler.AddToURL(strDloadURLPre, XMLResdata.strResName);
-  g_HTTPHandler.AddToURL(strDloadURLPre, XMLResdata.strDIRprefix);
-  g_HTTPHandler.AddToURL(strDloadURLPre, GetLangURLSuffix(XMLResdata));
+  std::string strLangDloadURL = XMLResdata.strTranslationrepoURL;
+  g_HTTPHandler.AddToURL(strLangDloadURL, XMLResdata.strLOCLangPath);
 
-  std::string strFilenamePre = XMLResdata.strResLocalDirectory;
-  g_File.AddToFilename(strFilenamePre, GetLangDir(XMLResdata));
+  std::string strLangFilename = XMLResdata.strResLocalDirectory;
+  g_File.AddToFilename(strLangFilename, XMLResdata.strLOCLangPath);
 
-  if (XMLResdata.bClearLangdir)
-  {
-    g_File.DelDirectory(strFilenamePre);
-    g_File.MakeDir(strFilenamePre);
-  }
+//TODO delete directory refactor to new langformat
+//  if (XMLResdata.bClearLangdir)
+//  {
+//    g_File.DelDirectory(strLangFilename);
+//    g_File.MakeDir(strLangFilename);
+//  }
 
   CLog::Log(logINFO, "ResHandler: Downloading language files:");
 
   for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
   {
-    if (XMLResdata.bSkipEnglishFile && *it == "English")
+    if (XMLResdata.bSkipEnglishFile && *it == XMLResdata.strSourceLcode)
       continue;
 
     printf (" %s", it->c_str());
 
-    if (XMLResdata.bWriteXML)
-    {
-      std::string strDloadURL = strDloadURLPre;
-      g_HTTPHandler.AddToURL(strDloadURL, *it);
-      g_HTTPHandler.AddToURL(strDloadURL, "strings.xml");
+    std::string strDloadURL = strLangDloadURL;
+    g_CharsetUtils.ReplaceLanginURL(strDloadURL, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
 
-      std::string strFilename = strFilenamePre;
-      g_File.AddToFilename(strFilename, *it);
-      g_File.AddToFilename(strFilename, "strings.xml");
+    std::string strFilename = strLangFilename;
+    g_CharsetUtils.ReplaceLanginURL(strDloadURL, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
 
-      g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);   
-    }
-    else if (XMLResdata.bWritePO)
-    {
-      std::string strDloadURL = strDloadURLPre;
-      g_HTTPHandler.AddToURL(strDloadURL, *it);
-      g_HTTPHandler.AddToURL(strDloadURL, "strings.po");
-
-      std::string strFilename = strFilenamePre;
-      g_File.AddToFilename(strFilename, *it);
-      g_File.AddToFilename(strFilename, "strings.po");
-
-      g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);   
-    }
+    g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
   }
+
   int langcount = listLangs.size();
   if (XMLResdata.bSkipEnglishFile)
     langcount--;
   printf ("\n\n");
-  CLog::Log(logINFO, "ResHandler: %i language files were downloaded for resource: %s",langcount, XMLResdata.strResName.c_str());
+  CLog::Log(logINFO, "ResHandler: %i language files were downloaded for resource: %s",langcount, XMLResdata.strName.c_str());
   CLog::DecIdent(2);
 
   return true;
-}
-
-std::string CResourceHandler::GetLangDir(CXMLResdata const &XMLResdata)
-{
-  std::string strLangDir;
-  switch (XMLResdata.Restype)
-  {
-    case ADDON: case ADDON_NOSTRINGS:
-      g_File.AddToFilename(strLangDir, "resources");
-      g_File.AddToFilename(strLangDir, "language");
-      break;
-    case SKIN:
-      g_File.AddToFilename(strLangDir, "language");
-      break;
-    case CORE:
-      g_File.AddToFilename(strLangDir, "language");
-      break;
-    default:
-      CLog::Log(logERROR, "ResHandler: No resourcetype defined for resource: %s",XMLResdata.strResName.c_str());
-  }
-  return strLangDir;
-}
-
-std::string CResourceHandler::GetLangURLSuffix(CXMLResdata const &XMLResdata)
-{
-  std::string strLangURLSuffix;
-  switch (XMLResdata.Restype)
-  {
-    case ADDON:
-      strLangURLSuffix = "resources/language/";
-      break;
-    case SKIN:
-      strLangURLSuffix = "language/";
-      break;
-    case CORE:
-      strLangURLSuffix = "language/";
-      break;
-    default:
-      CLog::Log(logERROR, "ResHandler: No resourcetype defined for resource: %s",XMLResdata.strResName.c_str());
-  }
-  return strLangURLSuffix;
 }
 
 std::string CResourceHandler::GetAddonVersion(std::string const &strAddonXMLFile)

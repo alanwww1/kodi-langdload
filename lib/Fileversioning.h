@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2012 Team XBMC
+ *      Copyright (C) 2014 Team Kodi
  *      http://www.xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -13,39 +13,30 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, write to
+ *  along with Kodi; see the file COPYING.  If not, write to
  *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
 
-#ifndef HTTPUTILS_H
-#define HTTPUTILS_H
+#ifndef FILEVERSIONING_H
+#define FILEVERSIONING_H
 
 #pragma once
 
 #include <string>
-#include <stdio.h>
-#include <curl/curl.h>
-#include "XMLHandler.h"
+#include <map>
 
-class CHTTPHandler
+class CFileversion
 {
 public:
-  CHTTPHandler();
-  ~CHTTPHandler();
-  void ReInit();
-  std::string GetURLToSTR(std::string strURL, bool bSkiperror = false);
-  void DloadURLToFile(std::string strURL, std::string strFilename);
-  void Cleanup();
-  void AddToURL (std::string &strURL, std::string strAddendum);
-  std::string GetGitHUBAPIURL(std::string const & strURL);
+  CFileversion();
+  ~CFileversion();
+  void SetVersionForURL(std::string const & strURL, std::string const & strVersion);
+  std::string GetVersionForURL(const std::string& strURL);
 private:
-  CURL *m_curlHandle;
-  std::string URLEncode (std::string strURL);
+  std::map <std::string, std::string> m_mapVersions;
 };
 
-size_t Write_CurlData_String(char *data, size_t size, size_t nmemb, std::string *buffer);
-
-extern CHTTPHandler g_HTTPHandler;
+extern CFileversion g_Fileversion;
 #endif

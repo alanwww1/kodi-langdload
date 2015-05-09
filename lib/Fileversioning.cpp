@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2012 Team XBMC
+ *      Copyright (C) 2014 Team Kodi
  *      http://www.xbmc.org
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -13,23 +13,40 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, write to
+ *  along with Kodi; see the file COPYING.  If not, write to
  *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  *  http://www.gnu.org/copyleft/gpl.html
  *
  */
-#pragma once
 
-#include <list>
-#include "XMLHandler.h"
+#include "Fileversioning.h"
+#include "HTTPUtils.h"
+#include "JSONHandler.h"
 
-class CResourceHandler
+CFileversion g_Fileversion;
+
+using namespace std;
+
+CFileversion::CFileversion()
 {
-public:
-  CResourceHandler();
-  ~CResourceHandler();
-  bool DloadLangFiles(CXMLResdata &XMLResdata);
-
-protected:
-  std::string GetAddonVersion(std::string const &strAddonXMLFile);
+  m_mapVersions.clear();
 };
+
+CFileversion::~CFileversion()
+{
+};
+
+void CFileversion::SetVersionForURL(const string& strURL, const string& strVersion)
+{
+//  printf ("%s:%s\n", strURL.c_str(), strVersion.c_str());
+  m_mapVersions[strURL] = strVersion;
+}
+
+std::string CFileversion::GetVersionForURL(const string& strURL)
+{
+  if (m_mapVersions.find(strURL) != m_mapVersions.end())
+  {
+    return m_mapVersions[strURL];
+  }
+  return "";
+}

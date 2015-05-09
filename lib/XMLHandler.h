@@ -19,13 +19,13 @@
  *
  */
 #pragma once
+#ifndef XMLHANDLER_H
+#define XMLHANDLER_H
 
 #include "TinyXML/tinyxml.h"
 #include <string>
 #include <map>
 #include <list>
-
-const std::string DEFAULTMERGEDLANGDIR = "merged-langfiles";
 
 class CInputData
 {
@@ -46,30 +46,39 @@ class CXMLResdata
 public:
   CXMLResdata();
   ~CXMLResdata();
-  std::string strTranslationrepoURL;
-  std::string strUpstreamURL;
-  std::string strProjName;
-  std::string strResNameFull;
-  std::string strMergedLangfileDir;
-  std::string strLangsFromUpstream;
-  int Restype;
-  std::string strResDirectory;
-  std::string strTXResName;
-  std::string strLangFileType;
-  std::string strURLSuffix;
-  std::string strDIRprefix;
-  std::string strAddonXMLSuffix;
-  std::string strLogFormat;
-  std::string strLogFilename;
-  std::string strResLocalDirectory;
-  std::string strResName;
-  std::string strGittemplate;
-  std::string strAddonVersion;
-  std::string strGitExecPath;
-  bool bWritePO, bWriteXML, bHasChangelog;
+  std::string strName, strResNameFull;
+
+  std::string strTXName, strTargetTXName;
+
+  std::string strUPSLangURL, strUPSLangURLRoot, strUPSLangFormat, strUPSLangFileName;
+  std::string strUPSSourceLangURL;
+  std::string strUPSAddonURL, strUPSAddonURLRoot, strUPSAddonLangFormat, strUPSAddonLangFormatinXML, strUPSAddonXMLFilename;
+  std::string strUPSSourceLangAddonURL;
+  std::string strUPSChangelogURL, strUPSChangelogURLRoot, strUPSChangelogName;
+
+  std::string strLOCLangPath, strLOCLangPathRoot, strLOCLangFormat, strLOCLangFileName;
+  std::string strLOCAddonPath, strLOCAddonPathRoot, strLOCAddonLangFormat, strLOCAddonLangFormatinXML, strLOCAddonXMLFilename;
+  std::string strLOCChangelogPath, strLOCChangelogPathRoot, strLOCChangelogName;
+
+  std::string strChangelogFormat;
+  bool bIsLanguageAddon;
+
+  bool bHasOnlyAddonXML;
   bool bSkipChangelog;
   bool bSkipEnglishFile;
   bool bClearLangdir;
+  std::string strTranslationrepoURL;
+  std::string strProjName;
+  std::string strMergedLangfileDir;
+  std::string strSourceLcode;
+  std::string strBaseLCode;
+  std::string DefaultAddonLFormatinXML;
+  std::string LangDatabaseURL;
+
+  std::string strResLocalDirectory;
+  std::string strGittemplate;
+  std::string strGitExecPath;
+  std::string strAddonVersion;
 };
 
 class CUpdateXMLHandler
@@ -77,7 +86,27 @@ class CUpdateXMLHandler
 public:
   CUpdateXMLHandler();
   ~CUpdateXMLHandler();
-  bool DownloadXMLToMap (std::string strURL, std::map<std::string, CXMLResdata> &mapResourceData, std::string const &strTXProjectname);
+  bool DownloadXMLToMap (std::string strURL);
+  bool GetParamsFromURLorPath (std::string const &strURL, std::string &strLangFormat, std::string &strFileName,
+                               std::string &strURLRoot, const char strSeparator);
+  bool GetParamsFromURLorPath (std::string const &strURL, std::string &strFileName,
+                               std::string &strURLRoot, const char strSeparator);
+
+  std::map<std::string, CXMLResdata> m_mapXMLResdata;
+  std::map<std::string, CXMLResdata>::iterator itXMLResdata;
+
+//  size_t m_CacheExpire;
+//  int m_minComplPercentage;
+//  std::string m_strProjectName;
+//  std::string m_strTargetProjectName;
+//  std::string m_strMergedLangfilesDir;
+//  std::string m_strProjectnameLong;
+//  std::string m_strSourceLcode;
+//  std::string m_strBaseLCode;
+//  std::string m_strDefTXLFormat;
+//  std::string m_strTargTXLFormat;
+//  std::string m_DefaultAddonLFormatinXML;
+//  std::string m_LangDatabaseURL;
 };
 
 class CInputXMLHandler
@@ -87,3 +116,5 @@ public:
   ~CInputXMLHandler();
   std::list<CInputData> ReadXMLToMem (std::string strFileName);
 };
+
+#endif

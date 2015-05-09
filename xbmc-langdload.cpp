@@ -35,6 +35,7 @@
 #include "lib/ResourceHandler.h"
 #include "lib/FileUtils.h"
 #include "lib/JSONHandler.h"
+#include "lib/LCode.h"
 
 using namespace std;
 
@@ -145,16 +146,15 @@ int main(int argc, char* argv[])
       listInputData = InputXMLHander.ReadXMLToMem(strInputXMLPath);
     }
 
-    std::map<std::string, CXMLResdata> mapResourceData;
-    CUpdateXMLHandler UpdateXMLHandler;
     CResourceHandler ResourceHandler;
+    CUpdateXMLHandler XMLHandler;
 
     std::list<std::string> listTXProjects;
-    std::string strGithubURL, strGithubBranch;
-    strGithubURL = "https://raw.github.com/xbmc/translations/master/translations/";
-    g_HTTPHandler.GetGithubAPIURLFromURL(strGithubURL, strGithubBranch);
+    std::string strGithubURL, strGithubAPIURL;
+    strGithubURL = "https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/";
+    strGithubAPIURL = g_HTTPHandler.GetGitHUBAPIURL(strGithubURL);
 
-    std::string strtemp = g_HTTPHandler.GetURLToSTR(strGithubURL + "?ref=" + strGithubBranch);
+    std::string strtemp = g_HTTPHandler.GetURLToSTR(strGithubAPIURL);
 
     if (strtemp.empty())
       CLog::Log(logERROR, "Error getting TX project list from xbmc translation github repo");
@@ -164,15 +164,15 @@ int main(int argc, char* argv[])
 
     for (std::list<std::string>::iterator it = listTXProjects.begin(); it != listTXProjects.end(); it++)
     {
-      UpdateXMLHandler.DownloadXMLToMap("https://raw.github.com/xbmc/translations/master/translations/" + *it + "/", mapResourceData, *it);
+      XMLHandler.DownloadXMLToMap("https://raw.github.com/xbmc/translations/master/kodi-translations/" + *it + "/");
     }
-    CLog::Log(logINFO, "Detected a total %i resources hosted in %i projects at xbmc/translations Github repo", mapResourceData.size(), listTXProjects.size());
+    CLog::Log(logINFO, "Detected a total %i resources hosted in %i projects at xbmc/translations Github repo", XMLHandler.m_mapXMLResdata.size(), listTXProjects.size());
 
     for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
     {
-      if (mapResourceData.find(it->strAddonName) != mapResourceData.end())
+      if (XMLHandler.m_mapXMLResdata.find(it->strAddonName) != XMLHandler.m_mapXMLResdata.end())
       {
-        CXMLResdata XMLResdata = mapResourceData[it->strAddonName];
+        CXMLResdata XMLResdata = XMLHandler.m_mapXMLResdata[it->strAddonName];
         XMLResdata.strResLocalDirectory = it->strAddonDir;
         XMLResdata.bSkipChangelog = it->bSkipChangelog;
         XMLResdata.bSkipEnglishFile = it->bSkipEnglishFile;
@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
           if ((pos = strFormat.find("%v")) != std::string::npos)
             strFormat.replace(pos, 2, XMLResdata.strAddonVersion.c_str());
           if ((pos = strFormat.find("%n")) != std::string::npos)
-            strFormat.replace(pos, 2, XMLResdata.strResName.c_str());
+            strFormat.replace(pos, 2, XMLResdata.strName.c_str());
 
           std::string strCommand;
           std::string strCDDirectory = XMLResdata.strResLocalDirectory;
@@ -214,10 +214,9 @@ int main(int argc, char* argv[])
     if (bListAddonsMode)
     {
       printf("\n"); 
-      for (std::map<std::string, CXMLResdata>::iterator it = mapResourceData.begin(); it != mapResourceData.end(); it++)
+      for (std::map<std::string, CXMLResdata>::iterator it = XMLHandler.m_mapXMLResdata.begin(); it != XMLHandler.m_mapXMLResdata.end(); it++)
       {
-        printf ("                                %s (%s%s%s )\n", it->first.c_str(), it->second.bWritePO? " PO":"",
-                it->second.bWriteXML? " XML":"", it->second.bHasChangelog? " changelog.txt":"");
+        printf ("                                %s (%s)\n", it->first.c_str(), !it->second.strChangelogFormat.empty()? " changelog.txt":"");
       }
     }
 

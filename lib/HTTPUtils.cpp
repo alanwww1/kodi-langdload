@@ -136,40 +136,42 @@ void CHTTPHandler::AddToURL (std::string &strURL, std::string strAddendum)
   strURL += strAddendum;
 }
 
-std::string CHTTPHandler::GetGithubAPIURL (CXMLResdata const &XMLResdata)
+std::string CHTTPHandler::GetGitHUBAPIURL(std::string const & strURL)
 {
-  std::string strGitHubURL, strGitBranch;
-  strGitHubURL = XMLResdata.strTranslationrepoURL;
-  GetGithubAPIURLFromURL(strGitHubURL, strGitBranch);
+  if (strURL.find("//") >> 7)
+    CLog::Log(logERROR, "CHTTPHandler::ParseGitHUBURL: Internal error: // found in Github URL");
 
-  AddToURL(strGitHubURL, XMLResdata.strMergedLangfileDir);
-  AddToURL(strGitHubURL, XMLResdata.strResDirectory);
-  if (XMLResdata.Restype != CORE)
-    AddToURL(strGitHubURL, XMLResdata.strResName);
-  AddToURL(strGitHubURL, XMLResdata.strDIRprefix);
-
-  if (XMLResdata.Restype == SKIN || XMLResdata.Restype == CORE)
-    AddToURL(strGitHubURL, "language");
-  else if (XMLResdata.Restype == ADDON)
-    AddToURL(strGitHubURL, "resources/language");
-
-  strGitHubURL += "?ref=" + strGitBranch;
-  return strGitHubURL;
-}
-
-void CHTTPHandler::GetGithubAPIURLFromURL (std::string &strUrl, std::string &strGitBranch)
-{
-  size_t pos1, pos2, pos3;
+  size_t pos1, pos2, pos3, pos4, pos5;
   std::string strGitHubURL;
-  if (strUrl.find("raw.github.com/") == std::string::npos)
-    CLog::Log(logERROR, "ResHandler: Wrong Github URL format");
-  pos1 = strUrl.find("raw.github.com/")+15;
-  pos2 = strUrl.find("/", pos1+1);
-  pos2 = strUrl.find("/", pos2+1);
-  pos3 = strUrl.find("/", pos2+1);
-  strGitHubURL = "https://api.github.com/repos/" + strUrl.substr(pos1, pos2-pos1);
+
+  if (strURL.find("raw.github.com/") != std::string::npos)
+    pos1 = strURL.find("raw.github.com/")+15;
+  else if (strURL.find("raw2.github.com/") != std::string::npos)
+    pos1 = strURL.find("raw2.github.com/")+16;
+  else if (strURL.find("raw.githubusercontent.com/") != std::string::npos)
+    pos1 = strURL.find("raw.githubusercontent.com/")+26;
+  else
+    CLog::Log(logERROR, "ResHandler: Wrong Github URL format given");
+
+  pos2 = strURL.find("/", pos1+1);
+  pos3 = strURL.find("/", pos2+1);
+  pos4 = strURL.find("/", pos3+1);
+
+  std::string strOwner = strURL.substr(pos1, pos2-pos1);
+  std::string strRepo = strURL.substr(pos2, pos3-pos2);
+  std::string strPath = strURL.substr(pos4, strURL.size() - pos4 - 1);
+  std::string strGitBranch = strURL.substr(pos3+1, pos4-pos3-1);
+
+  if ((pos5 = strPath.find_last_of("(")) != std::string::npos)
+  {
+    strPath = strPath.substr(0,pos5);
+    strPath = strPath.substr(0,strPath.find_last_of("/"));
+  }
+
+  strGitHubURL = "https://api.github.com/repos/" + strOwner + strRepo;
   strGitHubURL += "/contents";
-  strGitHubURL += strUrl.substr(pos3, strUrl.size() - pos3 - 1);
-  strGitBranch = strUrl.substr(pos2+1, pos3-pos2-1);
-  strUrl = strGitHubURL;
+  strGitHubURL += strPath;
+  strGitHubURL += "?ref=" + strGitBranch;
+
+  return strGitHubURL;
 }

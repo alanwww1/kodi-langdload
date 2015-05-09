@@ -30,6 +30,10 @@ all: ${OUTPUT}
 
 SRCS := lib/TinyXML/tinyxml.cpp lib/TinyXML/tinyxmlparser.cpp lib/TinyXML/tinystr.cpp lib/TinyXML/tinyxmlerror.cpp \
 lib/HTTPUtils.cpp \
+lib/CharsetUtils.cpp \
+lib/LCodeHandler.cpp \
+lib/LCode.cpp \
+lib/Fileversioning.cpp \
 lib/FileUtils.cpp \
 lib/Log.cpp \
 lib/XMLHandler.cpp \
@@ -59,10 +63,14 @@ tinyxmlparser.o: tinyxmlparser.cpp tinyxmlparser.h
 tinyxmlerror.o: tinyxmlerror.cpp tinyxmlerror.h
 tinystr.o: tinystr.cpp tinystr.h
 FileUtils.o: FileUtils.h FileUtils.cpp Log.cpp Log.h
-XMLHandler.o: XMLHandler.h Log.cpp Log.h tinyxml.o
+XMLHandler.o: XMLHandler.h Log.cpp Log.h tinyxml.o CharsetUtils.h CharsetUtils.cpp
 HTTPUtils.o: HTTPUtils.h Log.h Log.cpp
 JSONHandler.o: JSONHandler.h JSONHandler.cpp
 ResourceHandler.o: ResourceHandler.h Log.cpp Log.h JSONHandler.o JSONHandler.h JSONHandler.cpp
+CharsetUtils.o: CharsetUtils.cpp CharsetUtils.h
+Fileversioning.o: Fileversioning.h Fileversioning.cpp
+LCodeHandler.o: LCodeHandler.h LCodeHandler.cpp
+LCode.o: LCodeHandler.h LCodeHandler.cpp LCode.h LCode.cpp
 
 install:
 	install -m 755 xbmc-langdload /usr/local/bin/

@@ -24,21 +24,13 @@
 #include "HTTPUtils.h"
 #include "FileUtils.h"
 #include <list>
+#include "CharsetUtils.h"
+#include "LCode.h"
 
 using namespace std;
 
 CXMLResdata::CXMLResdata()
-{
-  Restype = UNKNOWN;
-  bWritePO = true;
-  bWriteXML = false;
-  bHasChangelog = true;
-  strLogFormat = "[B]%i[/B]\n\n- Updated language files from Transifex\n\n";
-  strLogFilename = "changelog.txt";
-  bSkipChangelog = false;
-  bSkipEnglishFile = false;
-  bClearLangdir =false;
-}
+{}
 
 CXMLResdata::~CXMLResdata()
 {}
@@ -60,51 +52,89 @@ CUpdateXMLHandler::CUpdateXMLHandler()
 CUpdateXMLHandler::~CUpdateXMLHandler()
 {};
 
-bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::string, CXMLResdata> &mapResourceData, std::string const &strTXProjectname)
+bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL)
 {
-  std::string strURLXMLFile = strURL + "xbmc-txupdate.xml";
+  std::string strURLXMLFile = strURL + "kodi-txupdate.xml";
 
   std::string strXMLFile = g_HTTPHandler.GetURLToSTR(strURLXMLFile);
   if (strXMLFile.empty())
-    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: http error getting XML file from upstream url: %s", strURL.c_str());
-
+    CLog::Log(logERROR, "CXMLHandler::DownloadXMLToMap: http error getting XML file from upstream url: %s", strURL.c_str());
   TiXmlDocument xmlUpdateXML;
 
   if (!xmlUpdateXML.Parse(strXMLFile.c_str(), 0, TIXML_DEFAULT_ENCODING))
   {
-    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: UpdateXML file problem: %s %s\n", xmlUpdateXML.ErrorDesc(), strURL.c_str());
+    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMap: UpdateXML file problem: %s %s\n", xmlUpdateXML.ErrorDesc(), strURL.c_str());
     return false;
   }
 
-  TiXmlElement* pRootElement = xmlUpdateXML.RootElement();
-  if (!pRootElement || pRootElement->NoChildren() || pRootElement->ValueTStr()!="resources")
+  TiXmlElement* pProjectRootElement = xmlUpdateXML.RootElement();
+  if (!pProjectRootElement || pProjectRootElement->NoChildren() || pProjectRootElement->ValueTStr()!="project")
   {
-    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: No root element called \"resources\" in xml file. Cannot continue. Please create it");
+    CLog::Log(logERROR, "CXMLHandler::DownloadXMLToMap: No root element called \"project\" in xml file. Cannot continue. Please create it");
     return false;
   }
 
-  std::string strProjName;
-  if (!pRootElement->Attribute("projectname") || (strProjName = pRootElement->Attribute("projectname")) == "")
-    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: No projectname specified in xbmc-txupdate.xml file. Cannot continue. "
-                        "Please contact TeamXBMC about this problem!");
+  TiXmlElement* pDataRootElement = pProjectRootElement->FirstChildElement("projectdata");
+  if (!pDataRootElement || pDataRootElement->NoChildren())
+  {
+    CLog::Log(logERROR, "CXMLHandler::DownloadXMLToMap: No element called \"projectdata\" in xml file. Cannot continue. Please create it");
+    return false;
+  }
 
-    CLog::Log(logINFO, "Reading xbmc-txupdate.xml file for project: %s", strTXProjectname.c_str());
+  TiXmlElement * pData;
 
-  std::string strMergedLangfileDir;
-  if (!pRootElement->Attribute("merged_langfiledir") || (strMergedLangfileDir = pRootElement->Attribute("merged_langfiledir")) == "")
-    strMergedLangfileDir = DEFAULTMERGEDLANGDIR;
+  //TODO separate download TX projectname from upload TX projectname to handle project name changes
+  std::string strProjName, strTargetProjectName;
+  if ((pData = pDataRootElement->FirstChildElement("projectname")))
+    strProjName = pData->FirstChild()->Value();
+
+  if ((pData = pDataRootElement->FirstChildElement("targetprojectname")))
+    strTargetProjectName = pData->FirstChild()->Value();
+  if (strTargetProjectName.empty())
+    strTargetProjectName = strProjName;
+
+  std::string strDefLangdatabaseURL;
+  if ((pData = pDataRootElement->FirstChildElement("langdatabaseurl")))
+    strDefLangdatabaseURL = pData->FirstChild()->Value();
+  if (strDefLangdatabaseURL.empty())
+    strDefLangdatabaseURL = "https://raw.github.com/xbmc/translations/master/tool/lang-database/kodi-languages.json";
+
+  std::string strBaseLcode;
+  if ((pData = pDataRootElement->FirstChildElement("baselcode")))
+    strBaseLcode = pData->FirstChild()->Value();
+  if (strBaseLcode.empty())
+    strBaseLcode = "$(LCODE)";
+
+    std::string strMergedLangfileDir;
+  if ((pData = pDataRootElement->FirstChildElement("merged_langfiledir")))
+    strMergedLangfileDir = pData->FirstChild()->Value();
+  if (strMergedLangfileDir.empty())
+    strMergedLangfileDir = "merged-langfiles";
+
+  std::string strSourcelcode;
+  if ((pData = pDataRootElement->FirstChildElement("sourcelcode")))
+    strSourcelcode = pData->FirstChild()->Value();
+  if (strSourcelcode.empty())
+    strSourcelcode = "en_GB";
+
+
+  TiXmlElement* pRootElement = pProjectRootElement->FirstChildElement("resources");
+  if (!pRootElement || pRootElement->NoChildren())
+  {
+    CLog::Log(logERROR, "CXMLHandler::DownloadXMLToMap: No element called \"resources\" in xml file. Cannot continue. Please create it");
+  }
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("resource");
   if (!pChildResElement || pChildResElement->NoChildren())
   {
-    CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: No xml element called \"resource\" exists in the xml file. Please contact TeamXBMC about this problem!");
-    return false;
+    CLog::Log(logERROR, "CXMLHandler::DownloadXMLToMap: No xml element called \"resource\" exists in the xml file. Cannot continue. Please create at least one");
   }
 
   std::string strType;
   while (pChildResElement && pChildResElement->FirstChild())
   {
     CXMLResdata currResData;
+
     currResData.strTranslationrepoURL = strURL;
     currResData.strProjName = strProjName;
     currResData.strMergedLangfileDir = strMergedLangfileDir;
@@ -112,88 +142,92 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL, std::map<std::stri
     std::string strResName;
     if (!pChildResElement->Attribute("name") || (strResName = pChildResElement->Attribute("name")) == "")
     {
-      CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: No name specified for resource. Cannot continue. Please contact TeamXBMC about this problem!");
-      return false;
+      CLog::Log(logERROR, "CXMLHandler::DownloadXMLToMap: No name specified for resource. Cannot continue. Please specify it.");
     }
-
-    currResData.strResName = strResName;
+    currResData.strName =strResName;
 
     if (pChildResElement->FirstChild())
     {
-      const TiXmlElement *pChildURLElement = pChildResElement->FirstChildElement("upstreamURL");
+      const TiXmlElement *pChildURLElement = pChildResElement->FirstChildElement("upstreamLangURL");
       if (pChildURLElement && pChildURLElement->FirstChild())
-        currResData.strUpstreamURL = pChildURLElement->FirstChild()->Value();
-      if (currResData.strUpstreamURL.empty())
-        CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: UpstreamURL entry is empty or missing for resource %s", strResName.c_str());
-      if (pChildURLElement->Attribute("filetype"))
-        currResData.strLangFileType = pChildURLElement->Attribute("filetype"); // For PO no need to explicitly specify. Only for XML.
-      if (pChildURLElement->Attribute("URLsuffix"))
-        currResData.strURLSuffix = pChildURLElement->Attribute("URLsuffix"); // Some http servers need suffix strings after filename(eg. gitweb)
-      if (pChildURLElement->Attribute("HasChangelog"))
-      {
-        std::string strHaschangelog = pChildURLElement->Attribute("HasChangelog"); // Note if the addon has upstream changelog
-        currResData.bHasChangelog = strHaschangelog == "true";
-      }
-      if (pChildURLElement->Attribute("LogFormat"))
-      {
-        std::string strLogFormat = pChildURLElement->Attribute("LogFormat");
-        currResData.strLogFormat = strLogFormat;
-      }
-      if (pChildURLElement->Attribute("LogFilename"))
-      {
-        std::string strLogFilename = pChildURLElement->Attribute("LogFilename");
-        currResData.strLogFilename = strLogFilename;
-      }
+        currResData.strUPSLangURL = pChildURLElement->FirstChild()->Value();
+      if (!(currResData.bHasOnlyAddonXML = currResData.strUPSLangURL.empty()) && (!GetParamsFromURLorPath (currResData.strUPSLangURL, currResData.strUPSLangFormat, currResData.strUPSLangFileName,
+        currResData.strUPSLangURLRoot, '/')))
+        CLog::Log(logERROR, "CXMLHandler::DownloadXMLToMap: UpstreamURL format is wrong for resource %s", strResName.c_str());
+      if (!currResData.strUPSLangURLRoot.empty() && currResData.strUPSLangURLRoot.find (".github") == std::string::npos)
+        CLog::Log(logERROR, "CXMLHandler::DownloadXMLToMap: Only github is supported as upstream repository for resource %s", strResName.c_str());
 
-      const TiXmlElement *pChildUpstrLElement = pChildResElement->FirstChildElement("upstreamLangs");
-      if (pChildUpstrLElement && pChildUpstrLElement->FirstChild())
-        currResData.strLangsFromUpstream = pChildUpstrLElement->FirstChild()->Value();
+      const TiXmlElement *pChildURLSRCElement = pChildResElement->FirstChildElement("upstreamLangSRCURL");
+      if (pChildURLSRCElement && pChildURLSRCElement->FirstChild())
+        currResData.strUPSSourceLangURL = pChildURLSRCElement->FirstChild()->Value();
 
-      const TiXmlElement *pChildResTypeElement = pChildResElement->FirstChildElement("resourceType");
-      if (pChildResTypeElement->Attribute("AddonXMLSuffix"))
-        currResData.strAddonXMLSuffix = pChildResTypeElement->Attribute("AddonXMLSuffix"); // Some addons have unique addon.xml filename eg. pvr addons with .in suffix
-      if (pChildResTypeElement && pChildResTypeElement->FirstChild())
-      {
-        strType = pChildResTypeElement->FirstChild()->Value();
-        if (strType == "addon")
-         currResData.Restype = ADDON;
-        else if (strType == "addon_nostrings")
-          currResData.Restype = ADDON_NOSTRINGS;
-        else if (strType == "skin")
-          currResData.Restype = SKIN;
-        else if (strType == "xbmc_core")
-          currResData.Restype = CORE;
-      }
-      if (currResData.Restype == UNKNOWN)
-        CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: Unknown type found or missing resourceType field for resource %s", strResName.c_str());
+      const TiXmlElement *pChildURLSRCAddonElement = pChildResElement->FirstChildElement("upstreamAddonSRCURL");
+      if (pChildURLSRCAddonElement && pChildURLSRCAddonElement->FirstChild())
+        currResData.strUPSSourceLangAddonURL = pChildURLSRCAddonElement->FirstChild()->Value();
 
-      const TiXmlElement *pChildResDirElement = pChildResElement->FirstChildElement("resourceSubdir");
-      if (pChildResDirElement && pChildResDirElement->FirstChild())
-        currResData.strResDirectory = pChildResDirElement->FirstChild()->Value();
-      if (pChildResDirElement->Attribute("writePO"))
-      {
-	      std::string strBool = pChildResDirElement->Attribute("writePO");
-        currResData.bWritePO = strBool == "true";
-      }
-      if (pChildResDirElement->Attribute("writeXML"))
-      {
-	      std::string strBool = pChildResDirElement->Attribute("writeXML");
-        currResData.bWriteXML = strBool == "true";
-      }
-      if (pChildResDirElement->Attribute("DIRprefix"))
-        currResData.strDIRprefix = pChildResDirElement->Attribute("DIRprefix"); // If there is any SUBdirectory needed in the tree
+      const TiXmlElement *pChildAddonURLElement = pChildResElement->FirstChildElement("upstreamAddonURL");
+      if (pChildAddonURLElement && pChildAddonURLElement->FirstChild())
+        currResData.strUPSAddonURL = pChildAddonURLElement->FirstChild()->Value();
+      if (currResData.strUPSAddonURL.empty())
+        currResData.strUPSAddonURL = currResData.strUPSLangURL.substr(0,currResData.strUPSLangURL.find(currResData.strName)
+        + currResData.strName.size()) + "/addon.xml";
+      if (currResData.strUPSAddonURL.empty())
+        CLog::Log(logERROR, "UpdXMLHandler: Unable to determine the URL for the addon.xml file for resource %s", strResName.c_str());
+      GetParamsFromURLorPath (currResData.strUPSAddonURL, currResData.strUPSAddonLangFormat, currResData.strUPSAddonXMLFilename,
+                              currResData.strUPSAddonURLRoot, '/');
+      if (!currResData.strUPSAddonURL.empty() && currResData.strUPSAddonURL.find (".github") == std::string::npos)
+        CLog::Log(logERROR, "UpdXMLHandler: Only github is supported as upstream repository for resource %s", strResName.c_str());
+      currResData.bIsLanguageAddon = !currResData.strUPSAddonLangFormat.empty();
 
-      const TiXmlElement *pChildTXNameElement = pChildResElement->FirstChildElement("TXname");
-      if (pChildTXNameElement && pChildTXNameElement->FirstChild())
-        currResData.strTXResName = pChildTXNameElement->FirstChild()->Value();
-      if (currResData.strTXResName.empty())
-        CLog::Log(logERROR, "CUpdateXMLHandler::DownloadXMLToMem: Transifex resource name is empty or missing for resource %s", strResName.c_str());
 
-      currResData.strResNameFull = strTXProjectname + "/" + strResName;
-      mapResourceData[currResData.strResNameFull] = currResData;
+      const TiXmlElement *pChildChglogUElement = pChildResElement->FirstChildElement("upstreamChangelogURL");
+      if (pChildChglogUElement && pChildChglogUElement->FirstChild())
+        currResData.strUPSChangelogURL = pChildChglogUElement->FirstChild()->Value();
+      else if (!currResData.strChangelogFormat.empty())
+        currResData.strUPSChangelogURL = currResData.strUPSAddonURLRoot + "changelog.txt";
+      if (!currResData.strChangelogFormat.empty())
+        GetParamsFromURLorPath (currResData.strUPSChangelogURL, currResData.strUPSChangelogName,
+                                currResData.strUPSChangelogURLRoot, '/');
+
+      const TiXmlElement *pChildLocLangElement = pChildResElement->FirstChildElement("localLangPath");
+      if (pChildLocLangElement && pChildLocLangElement->FirstChild())
+        currResData.strLOCLangPath = pChildLocLangElement->FirstChild()->Value();
+      if (currResData.strLOCLangPath.empty() && !currResData.bHasOnlyAddonXML)
+        currResData.strLOCLangPath = currResData.strName + currResData.strUPSLangURL.substr(currResData.strUPSAddonURLRoot.size()-1);
+      if (!currResData.bHasOnlyAddonXML && !GetParamsFromURLorPath (currResData.strLOCLangPath, currResData.strLOCLangFormat,
+        currResData.strLOCLangFileName, currResData.strLOCLangPathRoot, DirSepChar))
+        CLog::Log(logERROR, "UpdXMLHandler: Local langpath format is wrong for resource %s", strResName.c_str());
+
+      const TiXmlElement *pChildLocAddonElement = pChildResElement->FirstChildElement("localAddonPath");
+      if (pChildLocAddonElement && pChildLocAddonElement->FirstChild())
+        currResData.strLOCAddonPath = pChildLocAddonElement->FirstChild()->Value();
+      if (currResData.strLOCAddonPath.empty())
+        currResData.strLOCAddonPath = currResData.strName + DirSepChar + currResData.strUPSAddonXMLFilename;
+      GetParamsFromURLorPath (currResData.strLOCAddonPath, currResData.strLOCAddonLangFormat, currResData.strLOCAddonXMLFilename,
+                              currResData.strLOCAddonPathRoot, DirSepChar);
+
+      const TiXmlElement *pChildChglogLElement = pChildResElement->FirstChildElement("localChangelogPath");
+      if (pChildChglogLElement && pChildChglogLElement->FirstChild())
+        currResData.strLOCChangelogPath = pChildChglogLElement->FirstChild()->Value();
+      else
+        currResData.strLOCChangelogPath = currResData.strLOCAddonPathRoot + "changelog.txt";
+      GetParamsFromURLorPath (currResData.strLOCChangelogPath, currResData.strLOCChangelogName,
+                              currResData.strLOCChangelogPathRoot, '/');
+
+      currResData.strResNameFull = strTargetProjectName + "/" + currResData.strName;
+      currResData.strBaseLCode = strBaseLcode;
+      currResData.strSourceLcode = strSourcelcode;
+      currResData.strMergedLangfileDir = strMergedLangfileDir;
+      currResData.strProjName = strTargetProjectName;
+      currResData.LangDatabaseURL = strDefLangdatabaseURL;
+
+     m_mapXMLResdata [currResData.strResNameFull] = currResData;
+
     }
     pChildResElement = pChildResElement->NextSiblingElement("resource");
   }
+
+  g_LCode.Init(strDefLangdatabaseURL, strTargetProjectName, strBaseLcode);
 
   return true;
 };
@@ -273,4 +307,33 @@ std::list<CInputData> CInputXMLHandler::ReadXMLToMem(string strFileName)
     pChildResElement = pChildResElement->NextSiblingElement("addon");
   }
   return listInputData;
+}
+
+bool CUpdateXMLHandler::GetParamsFromURLorPath (string const &strURL, string &strLangFormat, string &strFileName,
+                                                string &strURLRoot, const char strSeparator)
+{
+  if (strURL.empty())
+    return false;
+
+  size_t pos0, posStart, posEnd;
+
+  pos0 = strURL.find_last_of("$");
+  if (((posStart = strURL.find("$("), pos0) != std::string::npos) && ((posEnd = strURL.find(")",posStart)) != std::string::npos))
+    strLangFormat = strURL.substr(posStart, posEnd - posStart +1);
+
+  return GetParamsFromURLorPath (strURL, strFileName, strURLRoot, strSeparator);
+}
+
+bool CUpdateXMLHandler::GetParamsFromURLorPath (string const &strURL, string &strFileName,
+                                                string &strURLRoot, const char strSeparator)
+{
+  if (strURL.empty())
+    return false;
+
+  if (strURL.find(strSeparator) == std::string::npos)
+    return false;
+
+  strFileName = strURL.substr(strURL.find_last_of(strSeparator)+1);
+  strURLRoot = g_CharsetUtils.GetRoot(strURL, strFileName);
+  return true;
 }
