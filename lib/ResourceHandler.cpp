@@ -55,6 +55,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   {
     std::string strDloadURL = XMLResdata.strTranslationrepoURL;
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strMergedLangfileDir);
+    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strName);
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strLOCAddonPath);
 
     std::string strFilename = XMLResdata.strResLocalDirectory;
@@ -72,6 +73,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   {
     std::string strDloadURL = XMLResdata.strTranslationrepoURL;
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strMergedLangfileDir);
+    g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strName);
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strLOCChangelogPath);
 
     std::string strFilename = XMLResdata.strResLocalDirectory;
@@ -91,6 +93,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   std::string strUPSLangURL = XMLResdata.strTranslationrepoURL;
   g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strMergedLangfileDir);
+  g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strName);
   g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strLOCLangPathRoot);
 
   std::string strtemp = g_HTTPHandler.GetURLToSTR(g_HTTPHandler.GetGitHUBAPIURL(strUPSLangURL));
@@ -110,6 +113,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   std::string strLangDloadURL = XMLResdata.strTranslationrepoURL;
   g_HTTPHandler.AddToURL(strLangDloadURL, XMLResdata.strMergedLangfileDir);
+  g_HTTPHandler.AddToURL(strLangDloadURL, XMLResdata.strName);
   g_HTTPHandler.AddToURL(strLangDloadURL, XMLResdata.strLOCLangPath);
 
   std::string strLangFilename = XMLResdata.strResLocalDirectory;
