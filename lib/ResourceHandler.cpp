@@ -42,7 +42,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   g_HTTPHandler.Cleanup();
   g_HTTPHandler.ReInit();
 
-  std::string strLogMessage = "DOWNLOADING RESOURCE: " + XMLResdata.strResNameFull + " FROM XBMC REPO";
+  std::string strLogMessage = "DOWNLOADING RESOURCE: " + XMLResdata.strResNameFull + " FROM KODI REPO";
   std::string strLogHeader;
   strLogHeader.resize(strLogMessage.size(), '*');
   CLog::Log(logLINEFEED, "");
@@ -87,17 +87,29 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     return true;
   }
 
-  std::list<std::string> listLangs;
+  std::list<std::string> listLangs, listLCodes;
 
+  std::string strUPSLangURL = XMLResdata.strTranslationrepoURL;
+  g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strMergedLangfileDir);
+  g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strLOCLangPathRoot);
 
-  std::string strtemp = g_HTTPHandler.GetURLToSTR(g_HTTPHandler.GetGitHUBAPIURL(XMLResdata.strTranslationrepoURL + XMLResdata.strLOCLangPathRoot));
+  std::string strtemp = g_HTTPHandler.GetURLToSTR(g_HTTPHandler.GetGitHUBAPIURL(strUPSLangURL));
 
   if (strtemp.empty())
-    CLog::Log(logERROR, "ResHandler::DloadLangFiles: error getting langfile list from xbmc translation github repo");
+    CLog::Log(logERROR, "ResHandler::DloadLangFiles: error getting langfile list from kodi translation github repo");
 
   listLangs = g_Json.ParseAvailDirsGITHUB(strtemp);
 
+  for (std::list<std::string>::iterator itlist = listLangs.begin(); itlist != listLangs.end(); itlist++)
+  {
+    std::string strLCode = g_LCode.GetLangCodeFromAlias(*itlist, XMLResdata.strLOCLangFormat, XMLResdata.strProjName);
+    if (strLCode.empty())
+      continue;
+    listLCodes.push_back(strLCode);
+  }
+
   std::string strLangDloadURL = XMLResdata.strTranslationrepoURL;
+  g_HTTPHandler.AddToURL(strLangDloadURL, XMLResdata.strMergedLangfileDir);
   g_HTTPHandler.AddToURL(strLangDloadURL, XMLResdata.strLOCLangPath);
 
   std::string strLangFilename = XMLResdata.strResLocalDirectory;
@@ -112,18 +124,16 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   CLog::Log(logINFO, "ResHandler: Downloading language files:");
 
-  for (std::list<std::string>::iterator it = listLangs.begin(); it != listLangs.end(); it++)
+  for (std::list<std::string>::iterator it = listLCodes.begin(); it != listLCodes.end(); it++)
   {
     if (XMLResdata.bSkipEnglishFile && *it == XMLResdata.strSourceLcode)
       continue;
 
     printf (" %s", it->c_str());
 
-    std::string strDloadURL = strLangDloadURL;
-    g_CharsetUtils.ReplaceLanginURL(strDloadURL, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
+    std::string strDloadURL = g_CharsetUtils.ReplaceLanginURL(strLangDloadURL, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
 
-    std::string strFilename = strLangFilename;
-    g_CharsetUtils.ReplaceLanginURL(strDloadURL, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
+    std::string strFilename = g_CharsetUtils.ReplaceLanginURL(strLangFilename, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
   }

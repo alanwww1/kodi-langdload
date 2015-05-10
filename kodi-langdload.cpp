@@ -44,18 +44,18 @@ void PrintUsage()
   printf
   (
   "1.Simple mode\n"
-  "  Usage: xbmc-langdload PROJECTID/ADDONID LOCALDIR\n\n"
-  "  PROJECTID: The id of the project defined on the xbmc repo. eg. xbmc-main-frodo\n"
+  "  Usage: kodi-langdload PROJECTID/ADDONID LOCALDIR\n\n"
+  "  PROJECTID: The id of the project defined on the kodi repo. eg. kodi-main\n"
   "  ADDONID: The id of the addon which is defined in the \"id\" tag in the addon.xml file\n"
   "  LOCALDIR: The local directory to copy the files to. This is where the addon.xml file gets.\n\n"
-  "  Example: xbmc-langdload xbmc-addons/plugin.video.coolplugin /home/myname/somedir/\n\n"
+  "  Example: kodi-langdload kodi-addons/plugin.video.coolplugin /home/myname/somedir/\n\n"
   "2.Batch mode with xml file usage:\n"
-  "  Usage: xbmc-langdload XMLFILE\n\n"
+  "  Usage: kodi-langdload XMLFILE\n\n"
   "  XMLFILE: The path and filename of the input XML file which holds the download data (check README for format)\n\n"
-  "  Example: xbmc-langdload xbmc-langdload.xml\n\n"
+  "  Example: kodi-langdload kodi-langdload.xml\n\n"
   "3.List addons mode:\n"
-  "  Usage: xbmc-langdload list addons\n\n"
-  "  In this mode you can fetch a current list of the available hosted addons on xbmc translations github repo.\n"
+  "  Usage: kodi-langdload list addons\n\n"
+  "  In this mode you can fetch a current list of the available hosted addons on kodi translations github repo.\n"
   "  This list also shows what language fileformat is used (XML or PO) and if the addon has a changelog.txt hosted.\n\n"
   );
   #ifdef _MSC_VER
@@ -63,7 +63,7 @@ void PrintUsage()
   (
   "Note for Windows users: In case you have whitespace or any special character\n"
   "in the directory/file argument, please use apostrophe around them. For example:\n"
-  "xbmc-langdload.exe xbmc-skins/skin.essence \"C:\\some dir\\\"\n"
+  "kodi-langdload.exe kodi-skins/skin.essence \"C:\\some dir\\\"\n"
   "Also make sure you have write access to the local directory.\n"
   "Please run the command prompt in admin mode\n\n"
   );
@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    CLog::Log(logINFO, "XBMC-LANGDLOAD v%s", VERSION.c_str());
+    CLog::Log(logINFO, "KODI-LANGDLOAD v%s", VERSION.c_str());
     CLog::Log(logLINEFEED, "");
 
     if (!bListAddonsMode && listInputData.empty())
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
     std::string strtemp = g_HTTPHandler.GetURLToSTR(strGithubAPIURL);
 
     if (strtemp.empty())
-      CLog::Log(logERROR, "Error getting TX project list from xbmc translation github repo");
+      CLog::Log(logERROR, "Error getting TX project list from kodi translation github repo");
 
     listTXProjects = g_Json.ParseAvailDirsGITHUB(strtemp);
     std::string strListProjects;
@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
     {
       XMLHandler.DownloadXMLToMap("https://raw.github.com/xbmc/translations/master/kodi-translations/" + *it + "/");
     }
-    CLog::Log(logINFO, "Detected a total %i resources hosted in %i projects at xbmc/translations Github repo", XMLHandler.m_mapXMLResdata.size(), listTXProjects.size());
+    CLog::Log(logINFO, "Detected a total %i resources hosted in %i projects at kodi/translations Github repo", XMLHandler.m_mapXMLResdata.size(), listTXProjects.size());
 
     for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
     {
@@ -208,7 +208,7 @@ int main(int argc, char* argv[])
         }
       }
       else
-        CLog::Log(logWARNING, "Addon name not found on xbmc github repository: %s", it->strAddonName.c_str());
+        CLog::Log(logWARNING, "Addon name not found on kodi github repository: %s", it->strAddonName.c_str());
     }
 
     if (bListAddonsMode)

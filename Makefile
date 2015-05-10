@@ -24,7 +24,7 @@ endif
 
 INCS := -Ilib/Json-cpp/include
 
-OUTPUT := xbmc-langdload
+OUTPUT := kodi-langdload
 
 all: ${OUTPUT}
 
@@ -73,6 +73,6 @@ LCodeHandler.o: LCodeHandler.h LCodeHandler.cpp
 LCode.o: LCodeHandler.h LCodeHandler.cpp LCode.h LCode.cpp
 
 install:
-	install -m 755 xbmc-langdload /usr/local/bin/
+	install -m 755 kodi-langdload /usr/local/bin/
 uninstall:
-	rm -rf /usr/local/bin/xbmc-langdload
+	rm -rf /usr/local/bin/kodi-langdload

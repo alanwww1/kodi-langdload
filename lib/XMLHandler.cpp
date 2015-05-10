@@ -136,7 +136,7 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL)
     CXMLResdata currResData;
 
     currResData.strTranslationrepoURL = strURL;
-    currResData.strProjName = strProjName;
+    currResData.strProjName = strTargetProjectName;
     currResData.strMergedLangfileDir = strMergedLangfileDir;
 
     std::string strResName;
@@ -179,6 +179,9 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL)
         CLog::Log(logERROR, "UpdXMLHandler: Only github is supported as upstream repository for resource %s", strResName.c_str());
       currResData.bIsLanguageAddon = !currResData.strUPSAddonLangFormat.empty();
 
+      const TiXmlElement *pChildChglogElement = pChildResElement->FirstChildElement("changelogFormat");
+      if (pChildChglogElement && pChildChglogElement->FirstChild())
+        currResData.strChangelogFormat = pChildChglogElement->FirstChild()->Value();
 
       const TiXmlElement *pChildChglogUElement = pChildResElement->FirstChildElement("upstreamChangelogURL");
       if (pChildChglogUElement && pChildChglogUElement->FirstChild())
@@ -217,8 +220,6 @@ bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL)
       currResData.strResNameFull = strTargetProjectName + "/" + currResData.strName;
       currResData.strBaseLCode = strBaseLcode;
       currResData.strSourceLcode = strSourcelcode;
-      currResData.strMergedLangfileDir = strMergedLangfileDir;
-      currResData.strProjName = strTargetProjectName;
       currResData.LangDatabaseURL = strDefLangdatabaseURL;
 
      m_mapXMLResdata [currResData.strResNameFull] = currResData;
@@ -255,7 +256,7 @@ std::list<CInputData> CInputXMLHandler::ReadXMLToMem(string strFileName)
 
   const TiXmlElement *pChildResElement = pRootElement->FirstChildElement("addon");
   if (!pChildResElement || pChildResElement->NoChildren())
-    CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: No xml element called \"addon\" exists in the xml file. Please contact TeamXBMC about this problem!");
+    CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: No xml element called \"addon\" exists in the xml file. Please contact TeamKODI about this problem!");
 
   std::list<CInputData> listInputData;
 

@@ -30,7 +30,7 @@ using namespace std;
 CLog::CLog()
 {
   m_ident = 0;
-  printf("XBMC-TXUPDATE v%s Logfile\n\n", VERSION.c_str());
+  printf("KODI-TXUPDATE v%s Logfile\n\n", VERSION.c_str());
 }
 
 CLog::~CLog()
