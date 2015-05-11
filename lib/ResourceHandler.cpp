@@ -51,7 +51,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   CLog::Log(logINFO, "%s", strLogHeader.c_str());
   CLog::IncIdent(2);
 
-  if (!XMLResdata.strUPSAddonURL.empty()) //we do have an addon.xml file existing
+  if (!XMLResdata.strUPSAddonURL.empty() && XMLResdata.strUPSAddonLangFormat.empty()) //we do have an addon.xml file existing
   {
     std::string strDloadURL = XMLResdata.strTranslationrepoURL;
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strMergedLangfileDir);
@@ -105,7 +105,8 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   for (std::list<std::string>::iterator itlist = listLangs.begin(); itlist != listLangs.end(); itlist++)
   {
-    std::string strLCode = g_LCode.GetLangCodeFromAlias(*itlist, XMLResdata.strLOCLangFormat, XMLResdata.strProjName);
+    std::string strMatchedLangalias = g_CharsetUtils.GetLangnameFromURL(*itlist, XMLResdata.strLOCLangPath, XMLResdata.strLOCAddonLangFormat);
+    std::string strLCode = g_LCode.GetLangCodeFromAlias(strMatchedLangalias, XMLResdata.strLOCLangFormat, XMLResdata.strProjName);
     if (strLCode.empty())
       continue;
     listLCodes.push_back(strLCode);
@@ -118,6 +119,19 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   std::string strLangFilename = XMLResdata.strResLocalDirectory;
   g_File.AddToFilename(strLangFilename, XMLResdata.strLOCLangPath);
+
+  std::string strAddonXMLDloadURL, strAddonXMLFilename;
+
+  if (!XMLResdata.strUPSAddonLangFormat.empty()) // We have a language-addon with individual addon.xml files
+  {
+    strAddonXMLDloadURL = XMLResdata.strTranslationrepoURL;
+    g_HTTPHandler.AddToURL(strAddonXMLDloadURL, XMLResdata.strMergedLangfileDir);
+    g_HTTPHandler.AddToURL(strAddonXMLDloadURL, XMLResdata.strName);
+    g_HTTPHandler.AddToURL(strAddonXMLDloadURL, XMLResdata.strLOCAddonPath);
+
+    strAddonXMLFilename = XMLResdata.strResLocalDirectory;
+    g_File.AddToFilename(strAddonXMLFilename, XMLResdata.strLOCAddonPath);
+  }
 
 //TODO delete directory refactor to new langformat
 //  if (XMLResdata.bClearLangdir)
@@ -136,10 +150,17 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     printf (" %s", it->c_str());
 
     std::string strDloadURL = g_CharsetUtils.ReplaceLanginURL(strLangDloadURL, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
-
     std::string strFilename = g_CharsetUtils.ReplaceLanginURL(strLangFilename, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
+
+    if (!strAddonXMLDloadURL.empty())
+    {
+      std::string strDloadURL = g_CharsetUtils.ReplaceLanginURL(strAddonXMLDloadURL, XMLResdata.strLOCAddonLangFormat, *it, XMLResdata.strProjName);
+      std::string strFilename = g_CharsetUtils.ReplaceLanginURL(strAddonXMLFilename, XMLResdata.strLOCAddonLangFormat, *it, XMLResdata.strProjName);
+
+      g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
+    }
   }
 
   int langcount = listLangs.size();
