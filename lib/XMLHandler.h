@@ -34,6 +34,7 @@ public:
   ~CInputData();
   std::string strAddonName;
   std::string strAddonDir;
+  std::string strAddonDirForSource;
   std::string strGittemplate;
   std::string strGitExecPath;
   bool bSkipChangelog;
@@ -76,6 +77,7 @@ public:
   std::string LangDatabaseURL;
 
   std::string strResLocalDirectory;
+  std::string strResLocalDirectoryForSRC;
   std::string strGittemplate;
   std::string strGitExecPath;
   std::string strAddonVersion;

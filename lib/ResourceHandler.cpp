@@ -120,7 +120,15 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   std::string strLangFilename = XMLResdata.strResLocalDirectory;
   g_File.AddToFilename(strLangFilename, XMLResdata.strLOCLangPath);
 
-  std::string strAddonXMLDloadURL, strAddonXMLFilename;
+  std::string strLangFilenameSRC;
+  bool bHasDifferentSourcelangLocation = !XMLResdata.strUPSSourceLangURL.empty();
+  if (bHasDifferentSourcelangLocation)  //Set path for source-language language-addon if it differs from the rest
+  {
+    strLangFilenameSRC = XMLResdata.strResLocalDirectoryForSRC.empty() ? XMLResdata.strResLocalDirectory : XMLResdata.strResLocalDirectoryForSRC; //Fallback to the same path the rest have
+    g_File.AddToFilename(strLangFilenameSRC, XMLResdata.strLOCLangPath);
+  }
+
+  std::string strAddonXMLDloadURL, strAddonXMLFilename, strAddonXMLFilenameSRC;
 
   if (!XMLResdata.strUPSAddonLangFormat.empty()) // We have a language-addon with individual addon.xml files
   {
@@ -131,6 +139,12 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
     strAddonXMLFilename = XMLResdata.strResLocalDirectory;
     g_File.AddToFilename(strAddonXMLFilename, XMLResdata.strLOCAddonPath);
+
+    if (!XMLResdata.strUPSSourceLangAddonURL.empty())  //Set path for source-language addon.xml file for language-addon if it differs from the rest
+    {
+      strAddonXMLFilenameSRC = XMLResdata.strResLocalDirectoryForSRC.empty() ? XMLResdata.strResLocalDirectory : XMLResdata.strResLocalDirectoryForSRC; // Fallback to the same path the rest have
+      g_File.AddToFilename(strAddonXMLFilenameSRC, XMLResdata.strLOCAddonPath);
+    }
   }
 
 //TODO delete directory refactor to new langformat
@@ -146,18 +160,30 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   {
     if (XMLResdata.bSkipEnglishFile && *it == XMLResdata.strSourceLcode)
       continue;
+//    if (bHasDifferentSourcelangLocation && *it == XMLResdata.strSourceLcode) // We have a separate location for the en_GB language addon
+//      continue;  //TODO implement ability to download the english file to another path than the rest
 
     printf (" %s", it->c_str());
 
     std::string strDloadURL = g_CharsetUtils.ReplaceLanginURL(strLangDloadURL, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
-    std::string strFilename = g_CharsetUtils.ReplaceLanginURL(strLangFilename, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
+
+    std::string strFilename;
+    if (!strLangFilenameSRC.empty() && *it == XMLResdata.strSourceLcode)
+      strFilename = g_CharsetUtils.ReplaceLanginURL(strLangFilenameSRC, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
+    else
+      strFilename = g_CharsetUtils.ReplaceLanginURL(strLangFilename, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
 
     if (!strAddonXMLDloadURL.empty())
     {
       std::string strDloadURL = g_CharsetUtils.ReplaceLanginURL(strAddonXMLDloadURL, XMLResdata.strLOCAddonLangFormat, *it, XMLResdata.strProjName);
-      std::string strFilename = g_CharsetUtils.ReplaceLanginURL(strAddonXMLFilename, XMLResdata.strLOCAddonLangFormat, *it, XMLResdata.strProjName);
+
+      std::string strFilename;
+      if (!strAddonXMLFilenameSRC.empty() && *it == XMLResdata.strSourceLcode)
+        strFilename = g_CharsetUtils.ReplaceLanginURL(strAddonXMLFilenameSRC, XMLResdata.strLOCAddonLangFormat, *it, XMLResdata.strProjName);
+      else
+        strFilename = g_CharsetUtils.ReplaceLanginURL(strAddonXMLFilename, XMLResdata.strLOCAddonLangFormat, *it, XMLResdata.strProjName);
 
       g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
     }

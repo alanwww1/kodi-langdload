@@ -174,6 +174,7 @@ int main(int argc, char* argv[])
       {
         CXMLResdata XMLResdata = XMLHandler.m_mapXMLResdata[it->strAddonName];
         XMLResdata.strResLocalDirectory = it->strAddonDir;
+	XMLResdata.strResLocalDirectoryForSRC = it->strAddonDirForSource;
         XMLResdata.bSkipChangelog = it->bSkipChangelog;
         XMLResdata.bSkipEnglishFile = it->bSkipEnglishFile;
         XMLResdata.strGittemplate = it->strGittemplate;

@@ -276,6 +276,10 @@ std::list<CInputData> CInputXMLHandler::ReadXMLToMem(string strFileName)
     if (currInputData.strAddonDir.empty())
       CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: Local directory is missing for addon: %s", strResName.c_str());
 
+    const TiXmlElement *pChildDirSRCElement = pChildResElement->FirstChildElement("localdirsource");
+    if (pChildDirSRCElement && pChildDirSRCElement->FirstChild())
+      currInputData.strAddonDirForSource = pChildDirSRCElement->FirstChild()->Value();
+
     std::string strBool;
     const TiXmlElement *pChildSkipchlogElement = pChildResElement->FirstChildElement("skipchangelog");
     if (pChildSkipchlogElement && pChildSkipchlogElement->FirstChild())
