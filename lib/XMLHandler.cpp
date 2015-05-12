@@ -307,6 +307,15 @@ std::list<CInputData> CInputXMLHandler::ReadXMLToMem(string strFileName)
         currInputData.strGitExecPath = strGitExecPath;
     }
 
+    const TiXmlElement *pChildGittemplSRCElement = pChildResElement->FirstChildElement("gittemplatesource");
+    if (pChildGittemplSRCElement && pChildGittemplSRCElement->FirstChild())
+    {
+      currInputData.strGittemplateSRC = pChildGittemplSRCElement->FirstChild()->Value();
+      std::string strGitExecPathSRC;
+      if (pChildGittemplSRCElement->Attribute("gitexecpathsource") && (strGitExecPathSRC = pChildGittemplSRCElement->Attribute("gitexecpathsource")) != "")
+        currInputData.strGitExecPathSRC = strGitExecPathSRC;
+    }
+
     listInputData.push_back(currInputData);
 
     pChildResElement = pChildResElement->NextSiblingElement("addon");

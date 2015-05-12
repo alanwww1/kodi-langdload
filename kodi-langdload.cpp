@@ -174,11 +174,13 @@ int main(int argc, char* argv[])
       {
         CXMLResdata XMLResdata = XMLHandler.m_mapXMLResdata[it->strAddonName];
         XMLResdata.strResLocalDirectory = it->strAddonDir;
-	XMLResdata.strResLocalDirectoryForSRC = it->strAddonDirForSource;
+        XMLResdata.strResLocalDirectoryForSRC = it->strAddonDirForSource;
         XMLResdata.bSkipChangelog = it->bSkipChangelog;
         XMLResdata.bSkipEnglishFile = it->bSkipEnglishFile;
         XMLResdata.strGittemplate = it->strGittemplate;
         XMLResdata.strGitExecPath = it->strGitExecPath;
+        XMLResdata.strGittemplateSRC = it->strGittemplateSRC;
+        XMLResdata.strGitExecPathSRC = it->strGitExecPathSRC;
         XMLResdata.bClearLangdir = it->bClearLangdir;
 
         ResourceHandler.DloadLangFiles(XMLResdata);
@@ -199,6 +201,28 @@ int main(int argc, char* argv[])
           strCommand += "cd " + strCDDirectory + " & ";
           strCommand += "\"" + XMLResdata.strGitExecPath + "sh.exe\" --login -i -c \"git add -A `git rev-parse --show-toplevel`\" & ";
           strCommand += "\"" + XMLResdata.strGitExecPath + "sh.exe\" --login -i -c \"git commit -m '" + strFormat + "'\"";
+#else
+          strCommand += "cd " + strCDDirectory + ";";
+          strCommand += "git add -A `git rev-parse --show-toplevel`;";
+          strCommand += "git commit -m \"" + strFormat + "\"";
+#endif
+          CLog::Log(logINFO, "GIT commit with the following command: %s", strCommand.c_str());
+          system (strCommand.c_str());
+        }
+        else if (!XMLResdata.strGittemplateSRC.empty())
+        {
+          size_t pos;
+          std::string strFormat = XMLResdata.strGittemplateSRC;
+          if ((pos = strFormat.find("%n")) != std::string::npos)
+            strFormat.replace(pos, 2, XMLResdata.strName.c_str());
+
+          std::string strCommand;
+          std::string strCDDirectory = XMLResdata.strResLocalDirectoryForSRC;
+
+#ifdef _MSC_VER
+          strCommand += "cd " + strCDDirectory + " & ";
+          strCommand += "\"" + XMLResdata.strGitExecPathSRC + "sh.exe\" --login -i -c \"git add -A `git rev-parse --show-toplevel`\" & ";
+          strCommand += "\"" + XMLResdata.strGitExecPathSRC + "sh.exe\" --login -i -c \"git commit -m '" + strFormat + "'\"";
 #else
           strCommand += "cd " + strCDDirectory + ";";
           strCommand += "git add -A `git rev-parse --show-toplevel`;";

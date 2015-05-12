@@ -36,7 +36,9 @@ public:
   std::string strAddonDir;
   std::string strAddonDirForSource;
   std::string strGittemplate;
+  std::string strGittemplateSRC;
   std::string strGitExecPath;
+  std::string strGitExecPathSRC;
   bool bSkipChangelog;
   bool bSkipEnglishFile;
   bool bClearLangdir;
@@ -80,6 +82,8 @@ public:
   std::string strResLocalDirectoryForSRC;
   std::string strGittemplate;
   std::string strGitExecPath;
+  std::string strGittemplateSRC;
+  std::string strGitExecPathSRC;
   std::string strAddonVersion;
 };
 

@@ -105,7 +105,8 @@ void CJSONHandler::ParseLangDatabaseVersion(const std::string &strJSON, const st
       if (strVersion == "unknown")
         CLog::Log(logERROR, "CJSONHandler::ParseLangDatabaseVersion: no valid sha JSON data downloaded from Github");
 
-      g_Fileversion.SetVersionForURL(strURL, strVersion);
+      //TODO
+      g_Fileversion.SetVersionForFile("", "", "", strVersion);
     }
   };
 };
