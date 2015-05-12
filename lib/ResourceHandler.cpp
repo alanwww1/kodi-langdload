@@ -105,7 +105,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   for (std::list<std::string>::iterator itlist = listLangs.begin(); itlist != listLangs.end(); itlist++)
   {
-    std::string strMatchedLangalias = g_CharsetUtils.GetLangnameFromURL(*itlist, XMLResdata.strLOCLangPath, XMLResdata.strLOCAddonLangFormat);
+    std::string strMatchedLangalias = g_CharsetUtils.GetLangnameFromURL(*itlist, XMLResdata.strLOCLangPath, XMLResdata.strLOCLangFormat);
     std::string strLCode = g_LCode.GetLangCodeFromAlias(strMatchedLangalias, XMLResdata.strLOCLangFormat, XMLResdata.strProjName);
     if (strLCode.empty())
       continue;
