@@ -156,6 +156,8 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
       g_File.DelDirectory(strToDel);
       g_File.MakeDir(strToDel);
     }
+    else
+      CLog::Log(logWARNING, "ResHandler: could not clear language directory for addon: %s", XMLResdata.strName.c_str());
   }
 
   CLog::Log(logINFO, "ResHandler: Downloading language files:");
