@@ -53,6 +53,18 @@ std::string CCharsetUtils::GetRoot(const std::string &strPath,const std::string 
   return strPath.substr(0, strPath.size()-strFilename.size());
 }
 
+std::string CCharsetUtils::GetRootDir(std::string strPath)
+{
+  if (strPath.size() == 1 || strPath == "" || strPath.find("/") == std::string::npos)
+    return "";
+  if (strPath.find_last_of("/") +1 == strPath.size())
+    strPath = strPath.substr(0, strPath.size()-1); // clean trailing per
+
+  strPath = strPath.substr(0, strPath.find_last_of("/"));
+
+  return strPath;
+}
+
 std::string CCharsetUtils::GetLangnameFromURL(std::string strName, std::string strURL, std::string strLangformat)
 {
   //Get Directory nameformat

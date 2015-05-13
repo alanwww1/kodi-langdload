@@ -147,12 +147,16 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     }
   }
 
-//TODO delete directory refactor to new langformat
-//  if (XMLResdata.bClearLangdir)
-//  {
-//    g_File.DelDirectory(strLangFilename);
-//    g_File.MakeDir(strLangFilename);
-//  }
+
+  if (XMLResdata.bClearLangdir)
+  {
+    std::string strToDel = g_CharsetUtils.GetRootDir(XMLResdata.strResLocalDirectory + "/" + XMLResdata.strLOCLangPathRoot);
+    if (strToDel != "")
+    {
+      g_File.DelDirectory(strToDel);
+      g_File.MakeDir(strToDel);
+    }
+  }
 
   CLog::Log(logINFO, "ResHandler: Downloading language files:");
 
