@@ -38,8 +38,9 @@ CXMLResdata::~CXMLResdata()
 CInputData::CInputData()
 {
   bSkipChangelog = false;
-  bSkipEnglishFile =false;
   bClearLangdir =false;
+  bSkipLangfiles = false;
+  bSkipSRCLangfile = false;
   strGitExecPath = "C:\\Program Files (x86)\\Git\\bin\\";
 }
 
@@ -287,16 +288,20 @@ std::list<CInputData> CInputXMLHandler::ReadXMLToMem(string strFileName)
     currInputData.bSkipChangelog = (strBool == "true");
 
     strBool.clear();
-    const TiXmlElement *pChildSkipenglishElement = pChildResElement->FirstChildElement("skipenglish");
-    if (pChildSkipenglishElement && pChildSkipenglishElement->FirstChild())
-      strBool = pChildSkipenglishElement->FirstChild()->Value();
-    currInputData.bSkipEnglishFile = (strBool == "true");
-
-    strBool.clear();
     const TiXmlElement *pChildClearLangdir = pChildResElement->FirstChildElement("clearlangdir");
     if (pChildClearLangdir && pChildClearLangdir->FirstChild())
       strBool = pChildClearLangdir->FirstChild()->Value();
     currInputData.bClearLangdir = (strBool == "true");
+
+    const TiXmlElement *pChildSkipLangFiles = pChildResElement->FirstChildElement("skiplangfiles");
+    if (pChildSkipLangFiles && pChildSkipLangFiles->FirstChild())
+      strBool = pChildSkipLangFiles->FirstChild()->Value();
+    currInputData.bSkipLangfiles = (strBool == "true");
+
+    const TiXmlElement *pChildSkipSrcLangFiles = pChildResElement->FirstChildElement("skipsrclangfile");
+    if (pChildSkipSrcLangFiles && pChildSkipSrcLangFiles->FirstChild())
+      strBool = pChildSkipSrcLangFiles->FirstChild()->Value();
+    currInputData.bSkipSRCLangfile = (strBool == "true");
 
     const TiXmlElement *pChildGittemplElement = pChildResElement->FirstChildElement("gittemplate");
     if (pChildGittemplElement && pChildGittemplElement->FirstChild())

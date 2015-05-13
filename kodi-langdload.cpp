@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
         if (strArg3.find("c") != std::string::npos)
           InputData.bSkipChangelog = true;
         if (strArg3.find("e") != std::string::npos)
-          InputData.bSkipEnglishFile = true;
+          InputData.bSkipSRCLangfile = true;
       }
       listInputData.push_back(InputData);
     }
@@ -176,7 +176,8 @@ int main(int argc, char* argv[])
         XMLResdata.strResLocalDirectory = it->strAddonDir;
         XMLResdata.strResLocalDirectoryForSRC = it->strAddonDirForSource;
         XMLResdata.bSkipChangelog = it->bSkipChangelog;
-        XMLResdata.bSkipEnglishFile = it->bSkipEnglishFile;
+        XMLResdata.bSkipLangfiles = it->bSkipLangfiles;
+	XMLResdata.bSkipSRCLangfile = it->bSkipSRCLangfile;
         XMLResdata.strGittemplate = it->strGittemplate;
         XMLResdata.strGitExecPath = it->strGitExecPath;
         XMLResdata.strGittemplateSRC = it->strGittemplateSRC;

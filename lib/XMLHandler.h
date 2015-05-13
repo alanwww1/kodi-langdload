@@ -40,8 +40,9 @@ public:
   std::string strGitExecPath;
   std::string strGitExecPathSRC;
   bool bSkipChangelog;
-  bool bSkipEnglishFile;
   bool bClearLangdir;
+  bool bSkipLangfiles;
+  bool bSkipSRCLangfile;
 };
 
 class CXMLResdata
@@ -68,8 +69,9 @@ public:
 
   bool bHasOnlyAddonXML;
   bool bSkipChangelog;
-  bool bSkipEnglishFile;
   bool bClearLangdir;
+  bool bSkipLangfiles;
+  bool bSkipSRCLangfile;
   std::string strTranslationrepoURL;
   std::string strProjName;
   std::string strMergedLangfileDir;

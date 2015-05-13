@@ -162,14 +162,23 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   CLog::Log(logINFO, "ResHandler: Downloading language files:");
 
+  // Download language files and language dependent addon.xml files for language addons
+
+  int langcount;
+
   for (std::list<std::string>::iterator it = listLCodes.begin(); it != listLCodes.end(); it++)
   {
-    if (XMLResdata.bSkipEnglishFile && *it == XMLResdata.strSourceLcode)
+    if (XMLResdata.bSkipSRCLangfile && *it == XMLResdata.strSourceLcode)
+      continue;
+    if (XMLResdata.bSkipLangfiles && XMLResdata.strUPSSourceLangURL.empty())
+      continue;
+    if (XMLResdata.bSkipLangfiles && !XMLResdata.strUPSSourceLangURL.empty() && *it !=XMLResdata.strSourceLcode)
       continue;
 //    if (bHasDifferentSourcelangLocation && *it == XMLResdata.strSourceLcode) // We have a separate location for the en_GB language addon
 //      continue;  //TODO implement ability to download the english file to another path than the rest
 
     printf (" %s", it->c_str());
+    langcount++;
 
     std::string strDloadURL = g_CharsetUtils.ReplaceLanginURL(strLangDloadURL, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
 
@@ -195,9 +204,6 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     }
   }
 
-  int langcount = listLangs.size();
-  if (XMLResdata.bSkipEnglishFile)
-    langcount--;
   printf ("\n\n");
   CLog::Log(logINFO, "ResHandler: %i language files were downloaded for resource: %s",langcount, XMLResdata.strName.c_str());
   CLog::DecIdent(2);
