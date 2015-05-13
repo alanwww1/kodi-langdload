@@ -164,7 +164,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   // Download language files and language dependent addon.xml files for language addons
 
-  int langcount;
+  int langcount =0;
 
   for (std::list<std::string>::iterator it = listLCodes.begin(); it != listLCodes.end(); it++)
   {
