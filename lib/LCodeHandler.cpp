@@ -35,7 +35,7 @@ CLCodeHandler::CLCodeHandler()
 CLCodeHandler::~CLCodeHandler()
 {}
 
-void CLCodeHandler::Init(std::string strURL, const std::string& strBaseLCode )
+void CLCodeHandler::Init(std::string strURL, const std::string& strBaseLCode, const std::string& strProjectname)
 {
   g_HTTPHandler.Cleanup();
   g_HTTPHandler.ReInit(); 
@@ -51,10 +51,11 @@ void CLCodeHandler::Init(std::string strURL, const std::string& strBaseLCode )
   if (strtemp.empty())
     CLog::Log(logERROR, "CLCodeHandler::Init: error getting language file version from github.com with URL: %s", strURL.c_str());
 
-  g_Json.ParseLangDatabaseVersion(strtemp, strURL);
+  std::string strCachename = strProjectname + "/" + "Langdatabase";
+  g_Json.ParseLangDatabaseVersion(strtemp, strURL, strCachename);
 
   printf(" Langdatabase");
-  strtemp = g_HTTPHandler.GetURLToSTR(strURL);
+  strtemp = g_HTTPHandler.GetURLToSTR(strURL, strCachename);
   if (strtemp.empty())
     CLog::Log(logERROR, "LangCode::Init: error getting available language list from URL %s", strURL.c_str());
 

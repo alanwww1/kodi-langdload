@@ -24,6 +24,8 @@
 #include <curl/easy.h>
 #include <cctype>
 #include "FileUtils.h"
+#include "Fileversioning.h"
+#include "CharsetUtils.h"
 
 CHTTPHandler g_HTTPHandler;
 
@@ -32,6 +34,18 @@ using namespace std;
 CHTTPHandler::CHTTPHandler()
 {
   m_curlHandle = curl_easy_init();
+
+  const char* home = getenv("HOME");
+
+  if (home)
+  {
+    std::string path(home);
+    path += "/.cache/kodi-langdload/";
+    m_strCacheDirectory = path;
+  }
+  else
+    CLog::Log(logERROR, "HTTPHandler: uable to determine HOME environment variable");
+
 };
 
 CHTTPHandler::~CHTTPHandler()
@@ -39,15 +53,41 @@ CHTTPHandler::~CHTTPHandler()
   Cleanup();
 };
 
-void CHTTPHandler::DloadURLToFile(std::string strURL, std::string strFilename)
+void CHTTPHandler::DloadURLToFile(std::string strURL, std::string strFilename, std::string strCachename)
 {
- g_File.WriteFileFromStr(strFilename, GetURLToSTR(strURL)); 
+ g_File.WriteFileFromStr(strFilename, GetURLToSTR(strURL, strCachename)); 
 }
 
-std::string CHTTPHandler::GetURLToSTR(std::string strURL, bool bSkiperror /*=false*/)
+std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strCachename /*=""*/)
 {
-  std::string strBuffer;
   strURL = URLEncode(strURL);
+
+  if (strCachename != "")
+  {
+    std::string strCacheFilePath = m_strCacheDirectory + strCachename;
+
+    std::string strCachedFileVersion, strWebFileVersion;
+    strWebFileVersion = g_Fileversion.GetVersionForFile(strCachename);
+
+    if (strWebFileVersion != "" && g_File.FileExist(strCacheFilePath + "/" + "_version.txt"))
+      strCachedFileVersion = g_File.ReadFileToStr(strCacheFilePath + "/" + "_version.txt");
+
+    bool bFileChangedOnWeb = strCachedFileVersion != strWebFileVersion || strCachedFileVersion == "" || strWebFileVersion == "";
+    bool bCacheFileExists = g_File.FileExist(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL));
+
+    if (bCacheFileExists && !bFileChangedOnWeb)
+    {
+      printf ("-");
+      return g_File.ReadFileToStr(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL));
+    }
+
+    printf("*");
+    g_File.DelFile(strCacheFilePath + "/" + "_version.txt");
+    g_File.DelFile(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL));
+
+  }
+
+  std::string strBuffer;
 
   CURLcode curlResult;
 
@@ -67,10 +107,14 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, bool bSkiperror /*=fal
 
       if (curlResult != 0 || http_code < 200 || http_code >= 400 || strBuffer.empty())
       {
-        if (!bSkiperror)
         CLog::Log(logERROR, "HTTPHandler:curlURLToStr finished with error code: %i from URL %s",
                   http_code, strURL.c_str());
-        return "";
+      }
+
+      if (strCachename != "" && g_Fileversion.GetVersionForFile(strCachename) != "")
+      {
+        g_File.WriteFileFromStr(m_strCacheDirectory + strCachename + "/" + "_version.txt", g_Fileversion.GetVersionForFile(strCachename));
+        g_File.WriteFileFromStr(m_strCacheDirectory + strCachename + "/" + g_CharsetUtils.GetFilenameFromURL(strURL), strBuffer);
       }
 
       return strBuffer;

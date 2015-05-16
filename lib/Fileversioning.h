@@ -34,8 +34,8 @@ class CFileversion
 public:
   CFileversion();
   ~CFileversion();
-  void SetVersionForFile (const string& strAddonID, const string& strFiletype, const string& strLCode, const string& strVersion);
-  std::string GetVersionForFile (const string& strAddonID, const string& strFiletype, const string& strLCode);
+  void SetVersionForFile (const string& strCachename, const string& strVersion);
+  std::string GetVersionForFile (const string& strCachename);
 private:
   std::map <std::string, std::string> m_mapVersions;
 };

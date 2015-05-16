@@ -35,14 +35,15 @@ public:
   CHTTPHandler();
   ~CHTTPHandler();
   void ReInit();
-  std::string GetURLToSTR(std::string strURL, bool bSkiperror = false);
-  void DloadURLToFile(std::string strURL, std::string strFilename);
+  std::string GetURLToSTR(std::string strURL, std::string strCachename = "");
+  void DloadURLToFile(std::string strURL, std::string strFilename, std::string strCachename = "");
   void Cleanup();
   void AddToURL (std::string &strURL, std::string strAddendum);
   std::string GetGitHUBAPIURL(std::string const & strURL);
 private:
   CURL *m_curlHandle;
   std::string URLEncode (std::string strURL);
+  std::string m_strCacheDirectory;
 };
 
 size_t Write_CurlData_String(char *data, size_t size, size_t nmemb, std::string *buffer);

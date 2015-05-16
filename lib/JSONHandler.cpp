@@ -71,7 +71,7 @@ std::list<std::string> CJSONHandler::ParseAvailDirsGITHUB(std::string strJSON)
   return listLangs;
 };
 
-void CJSONHandler::ParseLangDatabaseVersion(const std::string &strJSON, const std::string &strURL)
+void CJSONHandler::ParseLangDatabaseVersion(const std::string &strJSON, const std::string &strURL, const std::string& strCachename)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
@@ -105,8 +105,7 @@ void CJSONHandler::ParseLangDatabaseVersion(const std::string &strJSON, const st
       if (strVersion == "unknown")
         CLog::Log(logERROR, "CJSONHandler::ParseLangDatabaseVersion: no valid sha JSON data downloaded from Github");
 
-      //TODO
-      g_Fileversion.SetVersionForFile("", "", "", strVersion);
+      g_Fileversion.SetVersionForFile(strCachename, strVersion);
     }
   };
 };

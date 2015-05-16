@@ -38,7 +38,7 @@ public:
   ~CJSONHandler();
   std::list<std::string> ParseAvailDirsGITHUB(std::string strJSON);
   std::map<std::string, CLangcodes> ParseTransifexLanguageDatabase(std::string strJSON, const std::string& strBaseLCode);
-  void ParseLangDatabaseVersion(const std::string &strJSON, const std::string &strURL);
+  void ParseLangDatabaseVersion(const std::string &strJSON, const std::string &strURL, const std::string& strCachename);
   void AddGeneralRule(std::map<std::string, CLangcodes> &mapTXLangs, const std::string &strLeft, std::string strRight);
   void AddCustomRule(std::map<std::string, CLangcodes> &mapTXLangs, const std::string &strLangformat, const std::string &strLeft, const std::string &strRight);
 };

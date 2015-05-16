@@ -36,6 +36,7 @@ public:
   std::string GetRoot(const std::string &strPath,const std::string &strFilename);
   std::string GetRootDir(std::string strPath);
   std::string GetLangnameFromURL(std::string strName, std::string strURL, std::string strLangformat);
+  std::string GetFilenameFromURL(const std::string& strURL);
   std::string ReplaceLanginURL(const std::string &strURL,const std::string &strLangFormat, const std::string &strLCode, const std::string& strProjectName);
   bool replaceAllStrParts(std::string * pstr, const std::string& from, const std::string& to);
   std::string replaceStrParts(std::string strToReplace, const std::string& from, const std::string& to);

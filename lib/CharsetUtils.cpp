@@ -99,6 +99,13 @@ std::string CCharsetUtils::GetLangnameFromURL(std::string strName, std::string s
   return strName.substr(strPre.size(), strName.size()-strPre.size()-strPost.size());
 }
 
+std::string CCharsetUtils::GetFilenameFromURL(const std::string& strURL)
+{
+  if (strURL.find("/") == std::string::npos)
+    return "";
+  return strURL.substr(strURL.find_last_of("/")+1, std::string::npos);
+}
+
 std::string CCharsetUtils::ReplaceLanginURL(const std::string& strURL, const std::string& strLangFormat,
                                             const std::string& strLCode, const std::string& strProjectName)
 {

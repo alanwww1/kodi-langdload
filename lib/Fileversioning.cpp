@@ -36,18 +36,17 @@ CFileversion::~CFileversion()
 {
 };
 
-void CFileversion::SetVersionForFile(const string& strAddonID, const string& strFiletype, const string& strLCode, const string& strVersion)
+void CFileversion::SetVersionForFile(const string& strCachename, const string& strVersion)
 {
-//  printf ("%s:%s\n", strURL.c_str(), strVersion.c_str());
-  m_mapVersions[strAddonID + "/" + strFiletype + "/" + strLCode] = strVersion;
+  printf ("\n%s:%s\n", strCachename.c_str(), strVersion.c_str());
+  m_mapVersions[strCachename] = strVersion;
 }
 
-std::string CFileversion::GetVersionForFile(const string& strAddonID, const string& strFiletype, const string& strLCode)
+std::string CFileversion::GetVersionForFile(const string& strCachename)
 {
-  std::string strName = strAddonID + "/" + strFiletype + "/" + strLCode;
-  if (m_mapVersions.find(strName) != m_mapVersions.end())
+  if (m_mapVersions.find(strCachename) != m_mapVersions.end())
   {
-    return m_mapVersions[strName];
+    return m_mapVersions[strCachename];
   }
   return "";
 }

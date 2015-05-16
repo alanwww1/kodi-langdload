@@ -40,7 +40,7 @@ class CLCodeHandler
 public:
   CLCodeHandler();
   ~CLCodeHandler();
-  void Init(std::string strURL, const std::string& strBaseLCode);
+  void Init(std::string strURL, const std::string& strBaseLCode, const std::string& strProjectname);
   std::string GetLangCodeFromAlias(std::string Alias, std::string AliasForm);
   std::string GetLangFromLCode(std::string LangCode, std::string AliasForm);
   int GetnPlurals(std::string LangToLook);

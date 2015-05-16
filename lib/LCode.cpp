@@ -40,7 +40,7 @@ void CLCode::Init(std::string strURL, std::string strProjectname, const std::str
   if (m_mapLCodeHandlers.find(strProjectname) != m_mapLCodeHandlers.end())
     return;
   CLCodeHandler LCodeHandler;
-  LCodeHandler.Init(strURL, strBaseLCode);
+  LCodeHandler.Init(strURL, strBaseLCode, strProjectname);
   m_mapLCodeHandlers[strProjectname] = LCodeHandler;
 }
 
