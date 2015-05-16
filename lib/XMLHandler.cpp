@@ -293,11 +293,13 @@ std::list<CInputData> CInputXMLHandler::ReadXMLToMem(string strFileName)
       strBool = pChildClearLangdir->FirstChild()->Value();
     currInputData.bClearLangdir = (strBool == "true");
 
+    strBool.clear();
     const TiXmlElement *pChildSkipLangFiles = pChildResElement->FirstChildElement("skiplangfiles");
     if (pChildSkipLangFiles && pChildSkipLangFiles->FirstChild())
       strBool = pChildSkipLangFiles->FirstChild()->Value();
     currInputData.bSkipLangfiles = (strBool == "true");
 
+    strBool.clear();
     const TiXmlElement *pChildSkipSrcLangFiles = pChildResElement->FirstChildElement("skipsrclangfile");
     if (pChildSkipSrcLangFiles && pChildSkipSrcLangFiles->FirstChild())
       strBool = pChildSkipSrcLangFiles->FirstChild()->Value();
