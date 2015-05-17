@@ -38,7 +38,6 @@ CFileversion::~CFileversion()
 
 void CFileversion::SetVersionForFile(const string& strCachename, const string& strVersion)
 {
-  printf ("\n%s:%s\n", strCachename.c_str(), strVersion.c_str());
   m_mapVersions[strCachename] = strVersion;
 }
 

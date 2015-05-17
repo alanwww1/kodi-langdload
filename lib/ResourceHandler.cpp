@@ -89,8 +89,6 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     return true;
   }
 
-  std::list<std::string> listLangs, listLCodes;
-
   std::string strUPSLangURL = XMLResdata.strTranslationrepoURL;
   g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strMergedLangfileDir);
   g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strName);
@@ -101,16 +99,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   if (strtemp.empty())
     CLog::Log(logERROR, "ResHandler::DloadLangFiles: error getting langfile list from kodi translation github repo");
 
-  listLangs = g_Json.ParseAvailDirsGITHUB(strtemp);
-
-  for (std::list<std::string>::iterator itlist = listLangs.begin(); itlist != listLangs.end(); itlist++)
-  {
-    std::string strMatchedLangalias = g_CharsetUtils.GetLangnameFromURL(*itlist, XMLResdata.strLOCLangPath, XMLResdata.strLOCLangFormat);
-    std::string strLCode = g_LCode.GetLangCodeFromAlias(strMatchedLangalias, XMLResdata.strLOCLangFormat, XMLResdata.strProjName);
-    if (strLCode.empty())
-      continue;
-    listLCodes.push_back(strLCode);
-  }
+  std::list<std::string> listLCodes = g_Json.ParseAvailLangDirsGITHUB(strtemp, XMLResdata);
 
   std::string strLangDloadURL = XMLResdata.strTranslationrepoURL;
   g_HTTPHandler.AddToURL(strLangDloadURL, XMLResdata.strMergedLangfileDir);
@@ -188,7 +177,9 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     else
       strFilename = g_CharsetUtils.ReplaceLanginURL(strLangFilename, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
 
-    g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
+    std::string strCachename = XMLResdata.strProjName + "/" + XMLResdata.strName + "/" + *it;
+
+    g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename, strCachename);
 
     if (!strAddonXMLDloadURL.empty())
     {

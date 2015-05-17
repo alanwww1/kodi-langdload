@@ -26,6 +26,8 @@
 #include "Fileversioning.h"
 #include "XMLHandler.h"
 #include <algorithm>
+#include "CharsetUtils.h"
+#include "LCode.h"
 
 CJSONHandler g_Json;
 
@@ -43,7 +45,7 @@ std::list<std::string> CJSONHandler::ParseAvailDirsGITHUB(std::string strJSON)
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
   std::string lang;
-  std::list<std::string> listLangs;
+  std::list<std::string> listDirs;
 
   bool parsingSuccessful = reader.parse(strJSON, root );
   if ( !parsingSuccessful )
@@ -65,11 +67,57 @@ std::list<std::string> CJSONHandler::ParseAvailDirsGITHUB(std::string strJSON)
     lang =JValu.get("name", "unknown").asString();
     if (strType == "unknown")
       CLog::Log(logERROR, "CJSONHandler::ParseAvailDirsGITHUB: no valid JSON data downloaded from Github");
-    listLangs.push_back(lang);
+    listDirs.push_back(lang);
+  };
+
+  return listDirs;
+};
+
+std::list<std::string> CJSONHandler::ParseAvailLangDirsGITHUB(std::string strJSON, CXMLResdata XMLResdata)
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+  std::string lang, strVersion;
+  std::list<std::string> listLangs;
+
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+    CLog::Log(logERROR, "CJSONHandler::ParseAvailDirsGITHUB: no valid JSON data downloaded from Github");
+
+  const Json::Value JLangs = root;
+
+  for(Json::ValueIterator itr = JLangs.begin() ; itr !=JLangs.end() ; itr++)
+  {
+    Json::Value JValu = *itr;
+    std::string strType =JValu.get("type", "unknown").asString();
+    if (strType == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailLangDirsGITHUB: no valid JSON data downloaded from Github");
+    else if (strType != "dir")
+    {
+      CLog::Log(logWARNING, "CJSONHandler::ParseAvailLangDirsGITHUB: unknown file found in language directory");
+      continue;
+    }
+    lang =JValu.get("name", "unknown").asString();
+    if (strType == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailLangDirsGITHUB: no valid JSON data downloaded from Github");
+
+    strVersion =JValu.get("sha", "unknown").asString();
+    if (strVersion == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAvailLangDirsGITHUB: no valid sha JSON data downloaded from Github");
+
+    std::string strMatchedLangalias = g_CharsetUtils.GetLangnameFromURL(lang, XMLResdata.strLOCLangPath, XMLResdata.strLOCLangFormat);
+    std::string strLCode = g_LCode.GetLangCodeFromAlias(strMatchedLangalias, XMLResdata.strLOCLangFormat, XMLResdata.strProjName);
+    if (strLCode.empty())
+      continue;
+
+    listLangs.push_back(strLCode);
+    std::string strCachename = XMLResdata.strProjName + "/" + XMLResdata.strName + "/" + strLCode;
+    g_Fileversion.SetVersionForFile(strCachename, strVersion);
   };
 
   return listLangs;
 };
+
 
 void CJSONHandler::ParseLangDatabaseVersion(const std::string &strJSON, const std::string &strURL, const std::string& strCachename)
 {

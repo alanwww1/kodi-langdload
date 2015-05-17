@@ -69,8 +69,8 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strCachena
     std::string strCachedFileVersion, strWebFileVersion;
     strWebFileVersion = g_Fileversion.GetVersionForFile(strCachename);
 
-    if (strWebFileVersion != "" && g_File.FileExist(strCacheFilePath + "/" + "_version.txt"))
-      strCachedFileVersion = g_File.ReadFileToStr(strCacheFilePath + "/" + "_version.txt");
+    if (strWebFileVersion != "" && g_File.FileExist(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL) + "_version.txt"))
+      strCachedFileVersion = g_File.ReadFileToStr(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL) + "_version.txt");
 
     bool bFileChangedOnWeb = strCachedFileVersion != strWebFileVersion || strCachedFileVersion == "" || strWebFileVersion == "";
     bool bCacheFileExists = g_File.FileExist(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL));
@@ -82,7 +82,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strCachena
     }
 
     printf("*");
-    g_File.DelFile(strCacheFilePath + "/" + "_version.txt");
+    g_File.DelFile(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL) + "_version.txt");
     g_File.DelFile(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL));
 
   }
@@ -113,7 +113,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strCachena
 
       if (strCachename != "" && g_Fileversion.GetVersionForFile(strCachename) != "")
       {
-        g_File.WriteFileFromStr(m_strCacheDirectory + strCachename + "/" + "_version.txt", g_Fileversion.GetVersionForFile(strCachename));
+        g_File.WriteFileFromStr(m_strCacheDirectory + strCachename + "/" + g_CharsetUtils.GetFilenameFromURL(strURL) +"_version.txt", g_Fileversion.GetVersionForFile(strCachename));
         g_File.WriteFileFromStr(m_strCacheDirectory + strCachename + "/" + g_CharsetUtils.GetFilenameFromURL(strURL), strBuffer);
       }
 
