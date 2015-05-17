@@ -73,7 +73,7 @@ std::list<std::string> CJSONHandler::ParseAvailDirsGITHUB(std::string strJSON)
   return listDirs;
 };
 
-std::list<std::string> CJSONHandler::ParseAvailLangDirsGITHUB(std::string strJSON, CXMLResdata XMLResdata)
+std::list<std::string> CJSONHandler::ParseAvailLangDirsGITHUB(const std::string& strJSON, const CXMLResdata &XMLResdata)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
@@ -118,6 +118,43 @@ std::list<std::string> CJSONHandler::ParseAvailLangDirsGITHUB(std::string strJSO
   return listLangs;
 };
 
+void CJSONHandler::ParseAddonXMLVersionGITHUB(const std::string &strJSON, const CXMLResdata & XMLResdata )
+{
+  Json::Value root;   // will contains the root value after parsing.
+  Json::Reader reader;
+  std::string strName, strVersion;
+
+  bool parsingSuccessful = reader.parse(strJSON, root );
+  if ( !parsingSuccessful )
+    CLog::Log(logERROR, "CJSONHandler::ParseAddonXMLVersionGITHUB: no valid JSON data downloaded from Github");
+
+  const Json::Value JFiles = root;
+
+  for(Json::ValueIterator itr = JFiles.begin() ; itr !=JFiles.end() ; itr++)
+  {
+    Json::Value JValu = *itr;
+    std::string strType =JValu.get("type", "unknown").asString();
+
+    if (strType == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAddonXMLVersionGITHUB: no valid JSON data downloaded from Github");
+
+    strName =JValu.get("name", "unknown").asString();
+
+    if (strName == "unknown")
+      CLog::Log(logERROR, "CJSONHandler::ParseAddonXMLVersionGITHUB: no valid JSON data downloaded from Github");
+
+    if (strType == "file" && (!XMLResdata.strLOCAddonXMLFilename.empty() && strName == XMLResdata.strLOCAddonXMLFilename))
+      //(!XMLResdata.strChangelogFormat.empty() && strName == XMLResdata.strLOCChangelogName)))
+    {
+      strVersion =JValu.get("sha", "unknown").asString();
+
+      if (strVersion == "unknown")
+        CLog::Log(logERROR, "CJSONHandler::ParseAddonXMLVersionGITHUB: no valid sha JSON data downloaded from Github");
+
+      g_Fileversion.SetVersionForFile(XMLResdata.strProjName + "/" + XMLResdata.strName, strVersion);
+    }
+  };
+};
 
 void CJSONHandler::ParseLangDatabaseVersion(const std::string &strJSON, const std::string &strURL, const std::string& strCachename)
 {

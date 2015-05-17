@@ -58,10 +58,22 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strName);
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strLOCAddonPath);
 
+    // We get the version of the addon.xml and changelog.txt files here
+    if (!XMLResdata.strUPSAddonURL.empty() && XMLResdata.strUPSAddonLangFormat.empty()) // kodi language-addons have individual addon.xml files
+    {
+      std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(g_CharsetUtils.GetRootDir(strDloadURL) + "/");
+      std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+      if (strtemp.empty())
+        CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting addon.xml file version from github.com");
+
+      g_Json.ParseAddonXMLVersionGITHUB(strtemp, XMLResdata);
+    }
+
+    // Create local filename
     std::string strFilename = XMLResdata.strResLocalDirectory;
     g_File.AddToFilename(strFilename, XMLResdata.strLOCAddonPath);
 
-    std::string strAddonXMLFile = g_HTTPHandler.GetURLToSTR(strDloadURL);
+    std::string strAddonXMLFile = g_HTTPHandler.GetURLToSTR(strDloadURL, XMLResdata.strProjName + "/" + XMLResdata.strName);
     if (!XMLResdata.strGittemplate.empty())
       XMLResdata.strAddonVersion = GetAddonVersion(strAddonXMLFile);
     g_File.WriteFileFromStr(strFilename, strAddonXMLFile);
@@ -79,7 +91,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     std::string strFilename = XMLResdata.strResLocalDirectory;
     g_File.AddToFilename(strFilename, XMLResdata.strLOCChangelogPath);
 
-    g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
+    g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename, XMLResdata.strProjName + "/" + XMLResdata.strName);
     CLog::Log(logINFO, "ResHandler: changelog.txt downloaded for resource: %s",XMLResdata.strResNameFull.c_str());
   }
 
@@ -181,7 +193,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename, strCachename);
 
-    if (!strAddonXMLDloadURL.empty())
+    if (!strAddonXMLDloadURL.empty())  // Download individual addon.xml files for language addons
     {
       std::string strDloadURL = g_CharsetUtils.ReplaceLanginURL(strAddonXMLDloadURL, XMLResdata.strLOCAddonLangFormat, *it, XMLResdata.strProjName);
 
@@ -191,7 +203,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
       else
         strFilename = g_CharsetUtils.ReplaceLanginURL(strAddonXMLFilename, XMLResdata.strLOCAddonLangFormat, *it, XMLResdata.strProjName);
 
-      g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename);
+      g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename, strCachename);
     }
   }
 

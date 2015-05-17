@@ -182,6 +182,7 @@ void CHTTPHandler::AddToURL (std::string &strURL, std::string strAddendum)
 
 std::string CHTTPHandler::GetGitHUBAPIURL(std::string const & strURL)
 {
+
   if (strURL.find("//") >> 7)
     CLog::Log(logERROR, "CHTTPHandler::ParseGitHUBURL: Internal error: // found in Github URL");
 

@@ -352,9 +352,15 @@ bool CUpdateXMLHandler::GetParamsFromURLorPath (string const &strURL, string &st
     return false;
 
   if (strURL.find(strSeparator) == std::string::npos)
+  {
+    strFileName = strURL;
+    strURLRoot = "";
     return false;
+  }
 
-  strFileName = strURL.substr(strURL.find_last_of(strSeparator)+1);
+  size_t possep = strURL.find_last_of(strSeparator);
+
+  strFileName = strURL.substr(possep+1);
   strURLRoot = g_CharsetUtils.GetRoot(strURL, strFileName);
   return true;
 }
