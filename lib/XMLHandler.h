@@ -94,7 +94,7 @@ class CUpdateXMLHandler
 public:
   CUpdateXMLHandler();
   ~CUpdateXMLHandler();
-  bool DownloadXMLToMap (std::string strURL);
+  bool DownloadXMLToMap (const std::string& strProjectname, const std::string& strURL);
   bool GetParamsFromURLorPath (std::string const &strURL, std::string &strLangFormat, std::string &strFileName,
                                std::string &strURLRoot, const char strSeparator);
   bool GetParamsFromURLorPath (std::string const &strURL, std::string &strFileName,

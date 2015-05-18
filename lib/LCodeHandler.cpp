@@ -40,19 +40,15 @@ void CLCodeHandler::Init(std::string strURL, const std::string& strBaseLCode, co
   g_HTTPHandler.Cleanup();
   g_HTTPHandler.ReInit(); 
 
-  printf("-----------------------------\n");
-  printf("DOWNLOADING LANGUAGE DATABASE\n");
-  printf("-----------------------------\n");
-
   // We get the version of the language database files here
   std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(strURL.substr(0,strURL.find_last_of("/")+1));
-  printf("Langdatabaseversion");
+  printf("\nLangdatabaseversion");
   std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
   if (strtemp.empty())
     CLog::Log(logERROR, "CLCodeHandler::Init: error getting language file version from github.com with URL: %s", strURL.c_str());
 
   std::string strCachename = strProjectname + "/" + "Langdatabase";
-  g_Json.ParseLangDatabaseVersion(strtemp, strURL, strCachename);
+  g_Json.ParseFileVersion(strtemp, strURL, strCachename);
 
   printf(" Langdatabase");
   strtemp = g_HTTPHandler.GetURLToSTR(strURL, strCachename);

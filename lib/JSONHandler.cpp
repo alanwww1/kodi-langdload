@@ -156,13 +156,13 @@ void CJSONHandler::ParseAddonXMLVersionGITHUB(const std::string &strJSON, const 
   };
 };
 
-void CJSONHandler::ParseLangDatabaseVersion(const std::string &strJSON, const std::string &strURL, const std::string& strCachename)
+void CJSONHandler::ParseFileVersion(const std::string &strJSON, const std::string &strURL, const std::string& strCachename)
 {
   Json::Value root;   // will contains the root value after parsing.
   Json::Reader reader;
   std::string strName, strVersion;
 
-  std::string strDatabaseFilename = strURL.substr(strURL.rfind("/")+1,std::string::npos);
+  std::string strFilename = strURL.substr(strURL.rfind("/")+1,std::string::npos);
 
   bool parsingSuccessful = reader.parse(strJSON, root );
   if ( !parsingSuccessful )
@@ -183,7 +183,7 @@ void CJSONHandler::ParseLangDatabaseVersion(const std::string &strJSON, const st
     if (strName == "unknown")
       CLog::Log(logERROR, "CJSONHandler::ParseLangDatabaseVersion: no valid JSON data downloaded from Github");
 
-    if (strType == "file" && strName == strDatabaseFilename)
+    if (strType == "file" && strName == strFilename)
     {
       strVersion =JValu.get("sha", "unknown").asString();
 

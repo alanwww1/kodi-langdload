@@ -81,11 +81,12 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strCachena
       return g_File.ReadFileToStr(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL));
     }
 
-    printf("*");
     g_File.DelFile(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL) + "_version.txt");
     g_File.DelFile(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL));
 
   }
+
+  printf("*");
 
   std::string strBuffer;
 

@@ -153,6 +153,7 @@ int main(int argc, char* argv[])
     std::string strGithubURL, strGithubAPIURL;
     strGithubURL = "https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/";
     strGithubAPIURL = g_HTTPHandler.GetGitHUBAPIURL(strGithubURL);
+    printf("\nprojectlist");
 
     std::string strtemp = g_HTTPHandler.GetURLToSTR(strGithubAPIURL);
 
@@ -164,7 +165,17 @@ int main(int argc, char* argv[])
 
     for (std::list<std::string>::iterator it = listTXProjects.begin(); it != listTXProjects.end(); it++)
     {
-      XMLHandler.DownloadXMLToMap("https://raw.github.com/xbmc/translations/master/kodi-translations/" + *it + "/");
+      // We get the version of the kodi-txupdate.xml files here
+      std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL("https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/" + *it + "/");
+      printf("\n%s, kodi-txupdate.xml", it->c_str());
+      std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+      if (strtemp.empty())
+        CLog::Log(logERROR, "Error getting kodi-txupdate.xml file version for project: %s", it->c_str());
+
+      std::string strCachename = *it + "/" + "kodi-txupdate";
+      g_Json.ParseFileVersion(strtemp, "https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/" + *it + "/kodi-txupdate.xml", strCachename);
+
+      XMLHandler.DownloadXMLToMap(*it, "https://raw.github.com/xbmc/translations/master/kodi-translations/" + *it + "/");
     }
     CLog::Log(logINFO, "Detected a total %i resources hosted in %i projects at kodi/translations Github repo", XMLHandler.m_mapXMLResdata.size(), listTXProjects.size());
 

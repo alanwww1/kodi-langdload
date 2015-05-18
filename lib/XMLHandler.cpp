@@ -53,11 +53,12 @@ CUpdateXMLHandler::CUpdateXMLHandler()
 CUpdateXMLHandler::~CUpdateXMLHandler()
 {};
 
-bool CUpdateXMLHandler::DownloadXMLToMap (std::string strURL)
+bool CUpdateXMLHandler::DownloadXMLToMap (const std::string& strProjectname, const std::string& strURL)
 {
   std::string strURLXMLFile = strURL + "kodi-txupdate.xml";
 
-  std::string strXMLFile = g_HTTPHandler.GetURLToSTR(strURLXMLFile);
+  std::string strCachename = strProjectname + "/kodi-txupdate";
+  std::string strXMLFile = g_HTTPHandler.GetURLToSTR(strURLXMLFile, strCachename);
   if (strXMLFile.empty())
     CLog::Log(logERROR, "CXMLHandler::DownloadXMLToMap: http error getting XML file from upstream url: %s", strURL.c_str());
   TiXmlDocument xmlUpdateXML;
