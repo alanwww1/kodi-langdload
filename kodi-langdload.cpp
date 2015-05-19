@@ -146,6 +146,15 @@ int main(int argc, char* argv[])
       listInputData = InputXMLHander.ReadXMLToMem(strInputXMLPath);
     }
 
+    std::string strLogMessage = "Downloading project list and project files from https://github.com/xbmc/translations/tree/master/kodi-translations";
+    std::string strLogHeader;
+    strLogHeader.resize(strLogMessage.size(), '*');
+    CLog::Log(logLINEFEED, "");
+    CLog::Log(logINFO, "%s", strLogHeader.c_str());
+    CLog::Log(logINFO, "%s", strLogMessage.c_str());
+    CLog::Log(logINFO, "%s", strLogHeader.c_str());
+    CLog::IncIdent(2);
+
     CResourceHandler ResourceHandler;
     CUpdateXMLHandler XMLHandler;
 
@@ -153,7 +162,8 @@ int main(int argc, char* argv[])
     std::string strGithubURL, strGithubAPIURL;
     strGithubURL = "https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/";
     strGithubAPIURL = g_HTTPHandler.GetGitHUBAPIURL(strGithubURL);
-    printf("\nprojectlist");
+
+    CLog::Log(logINFO, "Project list");
 
     std::string strtemp = g_HTTPHandler.GetURLToSTR(strGithubAPIURL);
 
@@ -167,13 +177,15 @@ int main(int argc, char* argv[])
     {
       // We get the version of the kodi-txupdate.xml files here
       std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL("https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/" + *it + "/");
-      printf("\n%s, kodi-txupdate.xml", it->c_str());
+      CLog::Log(logINFO, "Prroject file version for project %s", it->c_str());
+
       std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
       if (strtemp.empty())
         CLog::Log(logERROR, "Error getting kodi-txupdate.xml file version for project: %s", it->c_str());
 
       std::string strCachename = *it + "/" + "kodi-txupdate";
       g_Json.ParseFileVersion(strtemp, "https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/" + *it + "/kodi-txupdate.xml", strCachename);
+      CLog::Log(logINFO, "Prroject file for project %s", it->c_str());
 
       XMLHandler.DownloadXMLToMap(*it, "https://raw.github.com/xbmc/translations/master/kodi-translations/" + *it + "/");
     }
@@ -257,8 +269,8 @@ int main(int argc, char* argv[])
       }
     }
 
-    std::string strLogMessage = "PROCESS FINISHED WITH " + g_File.IntToStr(CLog::GetWarnCount()) + " WARNINGS";
-    std::string strLogHeader;
+    strLogMessage = "PROCESS FINISHED WITH " + g_File.IntToStr(CLog::GetWarnCount()) + " WARNINGS";
+    strLogHeader.clear();
     strLogHeader.resize(strLogMessage.size(), '*');
     CLog::Log(logLINEFEED, "");
     CLog::Log(logINFO, "%s", strLogHeader.c_str());

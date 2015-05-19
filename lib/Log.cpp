@@ -48,9 +48,9 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
   if (loglevel == logWARNING)
     m_numWarnings++;
 
-  printf(g_File.GetCurrTime().c_str());
+//  printf(g_File.GetCurrTime().c_str());
   std::string strLogType;
-  printf("\t%s\t", listLogTypes[loglevel].c_str());
+//  printf("\t%s\t", listLogTypes[loglevel].c_str());
 
   va_list va;
   va_start(va, format);
