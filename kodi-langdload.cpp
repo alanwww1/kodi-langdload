@@ -146,6 +146,7 @@ int main(int argc, char* argv[])
       listInputData = InputXMLHander.ReadXMLToMem(strInputXMLPath);
     }
 
+    printf("%s", KGRN);
     std::string strLogMessage = "Downloading project list and project files from https://github.com/xbmc/translations/tree/master/kodi-translations";
     std::string strLogHeader;
     strLogHeader.resize(strLogMessage.size(), '*');
@@ -154,6 +155,7 @@ int main(int argc, char* argv[])
     CLog::Log(logINFO, "%s", strLogMessage.c_str());
     CLog::Log(logINFO, "%s", strLogHeader.c_str());
     CLog::IncIdent(2);
+    printf("%s", RESET);
 
     CResourceHandler ResourceHandler;
     CUpdateXMLHandler XMLHandler;
@@ -163,9 +165,11 @@ int main(int argc, char* argv[])
     strGithubURL = "https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/";
     strGithubAPIURL = g_HTTPHandler.GetGitHUBAPIURL(strGithubURL);
 
-    CLog::Log(logINFO, "Project list");
+    CLog::Log(logINFONLF, "Project list");
 
     std::string strtemp = g_HTTPHandler.GetURLToSTR(strGithubAPIURL);
+    CLog::Log(logLINEFEED, "");
+
 
     if (strtemp.empty())
       CLog::Log(logERROR, "Error getting TX project list from kodi translation github repo");
@@ -177,25 +181,44 @@ int main(int argc, char* argv[])
     {
       // We get the version of the kodi-txupdate.xml files here
       std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL("https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/" + *it + "/");
-      CLog::Log(logINFO, "Prroject file version for project %s", it->c_str());
+      CLog::Log(logINFONLF, "Project file version for project %s%s%s", KMAG, it->c_str(), RESET);
 
       std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+      CLog::Log(logLINEFEED, "");
+
       if (strtemp.empty())
-        CLog::Log(logERROR, "Error getting kodi-txupdate.xml file version for project: %s", it->c_str());
+        CLog::Log(logERROR, "Error getting kodi-txupdate.xml file version for project: %s%s%s", KMAG, it->c_str(), RESET);
 
       std::string strCachename = *it + "/" + "kodi-txupdate";
       g_Json.ParseFileVersion(strtemp, "https://raw.githubusercontent.com/xbmc/translations/master/kodi-translations/" + *it + "/kodi-txupdate.xml", strCachename);
-      CLog::Log(logINFO, "Prroject file for project %s", it->c_str());
+      CLog::Log(logINFONLF, "Project file for project %s%s%s", KMAG, it->c_str(), RESET);
 
       XMLHandler.DownloadXMLToMap(*it, "https://raw.github.com/xbmc/translations/master/kodi-translations/" + *it + "/");
+      CLog::Log(logLINEFEED, "");
     }
-    CLog::Log(logINFO, "Detected a total %i resources hosted in %i projects at kodi/translations Github repo", XMLHandler.m_mapXMLResdata.size(), listTXProjects.size());
+    CLog::Log(logINFO, "Detected a total %s%i%s resources hosted in %s%i%s projects at kodi/translations Github repo", KCYN, XMLHandler.m_mapXMLResdata.size(), RESET, KCYN, listTXProjects.size(), RESET);
+
+    CLog::DecIdent(2);
+
+    printf("%s", KGRN);
+    strLogMessage = "DOWNLOADING LANGUAGE DATA FROM KODI TRANSLATION GITHUB REPO";
+    strLogHeader.clear();
+    strLogHeader.resize(strLogMessage.size(), '*');
+    CLog::Log(logLINEFEED, "");
+    CLog::Log(logINFO, "%s", strLogHeader.c_str());
+    CLog::Log(logINFO, "%s", strLogMessage.c_str());
+    CLog::Log(logINFO, "%s", strLogHeader.c_str());
+    CLog::IncIdent(2);
+    printf("%s", RESET);
 
     for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
     {
       if (XMLHandler.m_mapXMLResdata.find(it->strAddonName) != XMLHandler.m_mapXMLResdata.end())
       {
         CXMLResdata XMLResdata = XMLHandler.m_mapXMLResdata[it->strAddonName];
+        CLog::Log(logINFO, "%s%s%s", KMAG, XMLResdata.strResNameFull.c_str(), RESET);
+        CLog::IncIdent(2);
+
         XMLResdata.strResLocalDirectory = it->strAddonDir;
         XMLResdata.strResLocalDirectoryForSRC = it->strAddonDirForSource;
         XMLResdata.bSkipChangelog = it->bSkipChangelog;
@@ -258,6 +281,8 @@ int main(int argc, char* argv[])
       }
       else
         CLog::Log(logWARNING, "Addon name not found on kodi github repository: %s", it->strAddonName.c_str());
+
+      CLog::DecIdent(2);
     }
 
     if (bListAddonsMode)

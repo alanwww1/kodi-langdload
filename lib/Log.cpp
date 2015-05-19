@@ -60,7 +60,9 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
   strIdent.assign(m_ident, ' ');
 
   vprintf((strIdent + strFormat).c_str(), va);
-  printf("\n");
+  if (loglevel != logINFONLF)
+    printf("\n");
+
   va_end(va);
 
   if (loglevel == logERROR)

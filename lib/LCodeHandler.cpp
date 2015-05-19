@@ -42,22 +42,31 @@ void CLCodeHandler::Init(std::string strURL, const std::string& strBaseLCode, co
 
   // We get the version of the language database files here
   std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(strURL.substr(0,strURL.find_last_of("/")+1));
-  printf("\nLangdatabaseversion");
+  CLog::Log(logINFONLF, "Language database version for project %s%s%s",KMAG, strProjectname.c_str(), RESET);
+
   std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+  CLog::Log(logLINEFEED, "");
+
   if (strtemp.empty())
     CLog::Log(logERROR, "CLCodeHandler::Init: error getting language file version from github.com with URL: %s", strURL.c_str());
 
   std::string strCachename = strProjectname + "/" + "Langdatabase";
   g_Json.ParseFileVersion(strtemp, strURL, strCachename);
 
-  printf(" Langdatabase");
+  CLog::Log(logINFONLF, "Language database file for project %s%s%s", KMAG, strProjectname.c_str(), RESET);
+
   strtemp = g_HTTPHandler.GetURLToSTR(strURL, strCachename);
+
   if (strtemp.empty())
+  {
+    CLog::Log(logLINEFEED, "");
     CLog::Log(logERROR, "LangCode::Init: error getting available language list from URL %s", strURL.c_str());
+  }
 
   m_mapLCodes = g_Json.ParseTransifexLanguageDatabase(strtemp, strBaseLCode);
 
-  CLog::Log(logINFO, "LCodeHandler: Succesfully fetched %i language codes from URL %s", m_mapLCodes.size(), strURL.c_str());
+  CLog::Log(logINFO, "(fetched %s%i%s language codes)", KCYN, m_mapLCodes.size(), RESET);
+  CLog::Log(logLINEFEED, "");
 }
 
 int CLCodeHandler::GetnPlurals(std::string LangCode)

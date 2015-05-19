@@ -230,6 +230,7 @@ bool CUpdateXMLHandler::DownloadXMLToMap (const std::string& strProjectname, con
     pChildResElement = pChildResElement->NextSiblingElement("resource");
   }
 
+  CLog::Log(logLINEFEED, "");
   g_LCode.Init(strDefLangdatabaseURL, strTargetProjectName, strBaseLcode);
 
   return true;

@@ -77,7 +77,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strCachena
 
     if (bCacheFileExists && !bFileChangedOnWeb)
     {
-      printf ("-");
+      printf ("%s-%s", KCYN, RESET);
       return g_File.ReadFileToStr(strCacheFilePath + "/" + g_CharsetUtils.GetFilenameFromURL(strURL));
     }
 
@@ -86,7 +86,7 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strCachena
 
   }
 
-  printf("*");
+  printf("%s*%s", KGRN, RESET);
 
   std::string strBuffer;
 

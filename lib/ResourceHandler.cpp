@@ -42,15 +42,6 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   g_HTTPHandler.Cleanup();
   g_HTTPHandler.ReInit();
 
-  std::string strLogMessage = "DOWNLOADING RESOURCE: " + XMLResdata.strResNameFull + " FROM KODI REPO";
-  std::string strLogHeader;
-  strLogHeader.resize(strLogMessage.size(), '*');
-  CLog::Log(logLINEFEED, "");
-  CLog::Log(logINFO, "%s", strLogHeader.c_str());
-  CLog::Log(logINFO, "%s", strLogMessage.c_str());
-  CLog::Log(logINFO, "%s", strLogHeader.c_str());
-  CLog::IncIdent(2);
-
   if (!XMLResdata.strUPSAddonURL.empty() && XMLResdata.strUPSAddonLangFormat.empty()) //we do have an addon.xml file existing
   {
     std::string strDloadURL = XMLResdata.strTranslationrepoURL;
@@ -71,14 +62,17 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
     // Create local filename
     std::string strFilename = XMLResdata.strResLocalDirectory;
+
+    CLog::Log(logINFONLF, "addon.xml file");
+
     g_File.AddToFilename(strFilename, XMLResdata.strLOCAddonPath);
 
     std::string strAddonXMLFile = g_HTTPHandler.GetURLToSTR(strDloadURL, XMLResdata.strProjName + "/" + XMLResdata.strName);
+    CLog::Log(logLINEFEED, "");
+
     if (!XMLResdata.strGittemplate.empty())
       XMLResdata.strAddonVersion = GetAddonVersion(strAddonXMLFile);
     g_File.WriteFileFromStr(strFilename, strAddonXMLFile);
-
-    CLog::Log(logINFO, "ResHandler: addon.xml downloaded for resource: %s",XMLResdata.strResNameFull.c_str());
   }
 
   if (!XMLResdata.bSkipChangelog && !XMLResdata.strChangelogFormat.empty())
@@ -91,13 +85,15 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     std::string strFilename = XMLResdata.strResLocalDirectory;
     g_File.AddToFilename(strFilename, XMLResdata.strLOCChangelogPath);
 
+    CLog::Log(logINFONLF, "changelog.txt file");
+
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename, XMLResdata.strProjName + "/" + XMLResdata.strName);
-    CLog::Log(logINFO, "ResHandler: changelog.txt downloaded for resource: %s",XMLResdata.strResNameFull.c_str());
+    CLog::Log(logLINEFEED, "");
   }
 
   if (XMLResdata.bHasOnlyAddonXML)
   {
-    CLog::DecIdent(2);
+//    CLog::DecIdent(2);
     return true;
   }
 
@@ -161,11 +157,11 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
       CLog::Log(logWARNING, "ResHandler: could not clear language directory for addon: %s", XMLResdata.strName.c_str());
   }
 
-  CLog::Log(logINFO, "ResHandler: Downloading language files:");
-
   // Download language files and language dependent addon.xml files for language addons
 
   int langcount =0;
+  if (!listLCodes.empty())
+    CLog::Log(logINFONLF, "Language files: ");
 
   for (std::list<std::string>::iterator it = listLCodes.begin(); it != listLCodes.end(); it++)
   {
@@ -178,7 +174,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 //    if (bHasDifferentSourcelangLocation && *it == XMLResdata.strSourceLcode) // We have a separate location for the en_GB language addon
 //      continue;  //TODO implement ability to download the english file to another path than the rest
 
-    printf (" %s", it->c_str());
+    printf (" %s%s%s", KCYN, it->c_str(), RESET);
     langcount++;
 
     std::string strDloadURL = g_CharsetUtils.ReplaceLanginURL(strLangDloadURL, XMLResdata.strLOCLangFormat, *it, XMLResdata.strProjName);
