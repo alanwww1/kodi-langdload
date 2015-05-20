@@ -50,20 +50,19 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strLOCAddonPath);
 
     // We get the version of the addon.xml and changelog.txt files here
-    if (!XMLResdata.strUPSAddonURL.empty() && XMLResdata.strUPSAddonLangFormat.empty()) // kodi language-addons have individual addon.xml files
-    {
-      std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(g_CharsetUtils.GetRootDir(strDloadURL) + "/");
-      std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
-      if (strtemp.empty())
-        CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting addon.xml file version from github.com");
+    CLog::Log(logINFONLF, "addon.xml:    version");
 
-      g_Json.ParseAddonXMLVersionGITHUB(strtemp, XMLResdata);
-    }
+    std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(g_CharsetUtils.GetRootDir(strDloadURL) + "/");
+    std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
+    if (strtemp.empty())
+      CLog::Log(logERROR, "ResHandler::FetchPOFilesUpstreamToMem: error getting addon.xml file version from github.com");
+
+    g_Json.ParseAddonXMLVersionGITHUB(strtemp, XMLResdata);
 
     // Create local filename
     std::string strFilename = XMLResdata.strResLocalDirectory;
 
-    CLog::Log(logINFONLF, "addon.xml file");
+    CLog::Log(logINFONLF, "file");
 
     g_File.AddToFilename(strFilename, XMLResdata.strLOCAddonPath);
 
@@ -85,7 +84,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     std::string strFilename = XMLResdata.strResLocalDirectory;
     g_File.AddToFilename(strFilename, XMLResdata.strLOCChangelogPath);
 
-    CLog::Log(logINFONLF, "changelog.txt file");
+    CLog::Log(logINFONLF, "changelog.txt: file");
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename, XMLResdata.strProjName + "/" + XMLResdata.strName);
     CLog::Log(logLINEFEED, "");
