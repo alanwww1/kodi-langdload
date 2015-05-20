@@ -57,10 +57,11 @@ void CLog::Log(TLogLevel loglevel, const char *format, ... )
 
   std::string strFormat = format;
   std::string strIdent;
-  strIdent.assign(m_ident, ' ');
+  if (loglevel != logINFONLFNID)
+    strIdent.assign(m_ident, ' ');
 
   vprintf((strIdent + strFormat).c_str(), va);
-  if (loglevel != logINFONLF)
+  if (loglevel != logINFONLF && loglevel != logINFONLFNID)
     printf("\n");
 
   va_end(va);

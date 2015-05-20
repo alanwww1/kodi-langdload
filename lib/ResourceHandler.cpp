@@ -50,7 +50,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     g_HTTPHandler.AddToURL(strDloadURL, XMLResdata.strLOCAddonPath);
 
     // We get the version of the addon.xml and changelog.txt files here
-    CLog::Log(logINFONLF, "addon.xml:    version");
+    CLog::Log(logINFONLF, "addon.xml:       version");
 
     std::string strGitHubURL = g_HTTPHandler.GetGitHUBAPIURL(g_CharsetUtils.GetRootDir(strDloadURL) + "/");
     std::string strtemp = g_HTTPHandler.GetURLToSTR(strGitHubURL);
@@ -62,7 +62,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     // Create local filename
     std::string strFilename = XMLResdata.strResLocalDirectory;
 
-    CLog::Log(logINFONLF, "file");
+    CLog::Log(logINFONLFNID, " file");
 
     g_File.AddToFilename(strFilename, XMLResdata.strLOCAddonPath);
 
@@ -84,7 +84,7 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
     std::string strFilename = XMLResdata.strResLocalDirectory;
     g_File.AddToFilename(strFilename, XMLResdata.strLOCChangelogPath);
 
-    CLog::Log(logINFONLF, "changelog.txt: file");
+    CLog::Log(logINFONLF, "changelog.txt:            file");
 
     g_HTTPHandler.DloadURLToFile(strDloadURL, strFilename, XMLResdata.strProjName + "/" + XMLResdata.strName);
     CLog::Log(logLINEFEED, "");
@@ -100,6 +100,8 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
   g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strMergedLangfileDir);
   g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strName);
   g_HTTPHandler.AddToURL(strUPSLangURL, XMLResdata.strLOCLangPathRoot);
+
+  CLog::Log(logINFONLF, "Langfiles: version");
 
   std::string strtemp = g_HTTPHandler.GetURLToSTR(g_HTTPHandler.GetGitHUBAPIURL(strUPSLangURL));
 
@@ -160,7 +162,6 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   int langcount =0;
   if (!listLCodes.empty())
-    CLog::Log(logINFONLF, "Language files: ");
 
   for (std::list<std::string>::iterator it = listLCodes.begin(); it != listLCodes.end(); it++)
   {
@@ -204,7 +205,6 @@ bool CResourceHandler::DloadLangFiles(CXMLResdata &XMLResdata)
 
   printf ("\n\n");
   CLog::Log(logINFO, "ResHandler: %i language files were downloaded for resource: %s",langcount, XMLResdata.strName.c_str());
-  CLog::DecIdent(2);
 
   return true;
 }

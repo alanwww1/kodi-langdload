@@ -208,7 +208,6 @@ int main(int argc, char* argv[])
     CLog::Log(logINFO, "%s", strLogHeader.c_str());
     CLog::Log(logINFO, "%s", strLogMessage.c_str());
     CLog::Log(logINFO, "%s", strLogHeader.c_str());
-    CLog::IncIdent(2);
     printf("%s", RESET);
 
     for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
@@ -217,7 +216,6 @@ int main(int argc, char* argv[])
       {
         CXMLResdata XMLResdata = XMLHandler.m_mapXMLResdata[it->strAddonName];
         CLog::Log(logINFO, "%s%s%s", KMAG, XMLResdata.strResNameFull.c_str(), RESET);
-        CLog::IncIdent(2);
 
         XMLResdata.strResLocalDirectory = it->strAddonDir;
         XMLResdata.strResLocalDirectoryForSRC = it->strAddonDirForSource;
@@ -282,7 +280,6 @@ int main(int argc, char* argv[])
       else
         CLog::Log(logWARNING, "Addon name not found on kodi github repository: %s", it->strAddonName.c_str());
 
-      CLog::DecIdent(2);
     }
 
     if (bListAddonsMode)
