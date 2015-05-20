@@ -287,7 +287,7 @@ int main(int argc, char* argv[])
       printf("\n"); 
       for (std::map<std::string, CXMLResdata>::iterator it = XMLHandler.m_mapXMLResdata.begin(); it != XMLHandler.m_mapXMLResdata.end(); it++)
       {
-        printf ("                                %s (%s)\n", it->first.c_str(), !it->second.strChangelogFormat.empty()? " changelog.txt":"");
+        printf ("%s%s%s (%s)\n", KMAG, it->first.c_str(), RESET, !it->second.strChangelogFormat.empty()? " changelog.txt":"");
       }
     }
 
