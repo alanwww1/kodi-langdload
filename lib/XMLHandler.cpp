@@ -53,6 +53,23 @@ CUpdateXMLHandler::CUpdateXMLHandler()
 CUpdateXMLHandler::~CUpdateXMLHandler()
 {};
 
+CXMLResdata CUpdateXMLHandler::GetXMLResdata (const CInputData& it)
+{
+  CXMLResdata XMLResdata = m_mapXMLResdata[it.strAddonName];
+
+  XMLResdata.strResLocalDirectory = it.strAddonDir;
+  XMLResdata.strResLocalDirectoryForSRC = it.strAddonDirForSource;
+  XMLResdata.bSkipChangelog = it.bSkipChangelog;
+  XMLResdata.bSkipLangfiles = it.bSkipLangfiles;
+  XMLResdata.bSkipSRCLangfile = it.bSkipSRCLangfile;
+  XMLResdata.strGittemplate = it.strGittemplate;
+  XMLResdata.strGitExecPath = it.strGitExecPath;
+  XMLResdata.strGittemplateSRC = it.strGittemplateSRC;
+  XMLResdata.strGitExecPathSRC = it.strGitExecPathSRC;
+  XMLResdata.bClearLangdir = it.bClearLangdir;
+  return XMLResdata;
+}
+
 bool CUpdateXMLHandler::DownloadXMLToMap (const std::string& strProjectname, const std::string& strURL)
 {
   std::string strURLXMLFile = strURL + "kodi-txupdate.xml";

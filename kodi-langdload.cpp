@@ -85,6 +85,8 @@ int main(int argc, char* argv[])
   CInputData InputData;
   std::string strInputXMLPath;
   bool bListAddonsMode = false;
+  bool bDoGitPull = true;
+  bool bDownloadLangFiles = true;
 
   if (argc == 3 || argc ==4 )
   {
@@ -200,88 +202,110 @@ int main(int argc, char* argv[])
 
     CLog::DecIdent(2);
 
-    printf("%s", KGRN);
-    strLogMessage = "DOWNLOADING LANGUAGE DATA FROM KODI TRANSLATION GITHUB REPO";
-    strLogHeader.clear();
-    strLogHeader.resize(strLogMessage.size(), '*');
-    CLog::Log(logLINEFEED, "");
-    CLog::Log(logINFO, "%s", strLogHeader.c_str());
-    CLog::Log(logINFO, "%s", strLogMessage.c_str());
-    CLog::Log(logINFO, "%s", strLogHeader.c_str());
-    printf("%s", RESET);
 
-    for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
+    //do git pull
+    if (bDoGitPull)
     {
-      if (XMLHandler.m_mapXMLResdata.find(it->strAddonName) != XMLHandler.m_mapXMLResdata.end())
+      printf("%s", KGRN);
+      strLogMessage = "DOING GIT PULL OPERATIONS FOR UPSTREAM GITHUB REPOS";
+      strLogHeader.clear();
+      strLogHeader.resize(strLogMessage.size(), '*');
+      CLog::Log(logLINEFEED, "");
+      CLog::Log(logINFO, "%s", strLogHeader.c_str());
+      CLog::Log(logINFO, "%s", strLogMessage.c_str());
+      CLog::Log(logINFO, "%s", strLogHeader.c_str());
+      printf("%s", RESET);
+
+      for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
       {
-        CXMLResdata XMLResdata = XMLHandler.m_mapXMLResdata[it->strAddonName];
-        CLog::Log(logINFO, "%s%s%s", KMAG, XMLResdata.strResNameFull.c_str(), RESET);
-
-        XMLResdata.strResLocalDirectory = it->strAddonDir;
-        XMLResdata.strResLocalDirectoryForSRC = it->strAddonDirForSource;
-        XMLResdata.bSkipChangelog = it->bSkipChangelog;
-        XMLResdata.bSkipLangfiles = it->bSkipLangfiles;
-	XMLResdata.bSkipSRCLangfile = it->bSkipSRCLangfile;
-        XMLResdata.strGittemplate = it->strGittemplate;
-        XMLResdata.strGitExecPath = it->strGitExecPath;
-        XMLResdata.strGittemplateSRC = it->strGittemplateSRC;
-        XMLResdata.strGitExecPathSRC = it->strGitExecPathSRC;
-        XMLResdata.bClearLangdir = it->bClearLangdir;
-
-        ResourceHandler.DloadLangFiles(XMLResdata);
-
-        if (!XMLResdata.strGittemplate.empty())
+        if (XMLHandler.m_mapXMLResdata.find(it->strAddonName) != XMLHandler.m_mapXMLResdata.end())
         {
-          size_t pos;
-          std::string strFormat = XMLResdata.strGittemplate;
-          if ((pos = strFormat.find("%v")) != std::string::npos)
-            strFormat.replace(pos, 2, XMLResdata.strAddonVersion.c_str());
-          if ((pos = strFormat.find("%n")) != std::string::npos)
-            strFormat.replace(pos, 2, XMLResdata.strName.c_str());
-
-          std::string strCommand;
-          std::string strCDDirectory = XMLResdata.strResLocalDirectory;
-
-#ifdef _MSC_VER
-          strCommand += "cd " + strCDDirectory + " & ";
-          strCommand += "\"" + XMLResdata.strGitExecPath + "sh.exe\" --login -i -c \"git add -A `git rev-parse --show-toplevel`\" & ";
-          strCommand += "\"" + XMLResdata.strGitExecPath + "sh.exe\" --login -i -c \"git commit -m '" + strFormat + "'\"";
-#else
-          strCommand += "cd " + strCDDirectory + ";";
-          strCommand += "git add -A `git rev-parse --show-toplevel`;";
-          strCommand += "git commit -m \"" + strFormat + "\"";
-#endif
-          CLog::Log(logINFO, "GIT commit with the following command: %s", strCommand.c_str());
-          system (strCommand.c_str());
+          CXMLResdata XMLResdata = XMLHandler.GetXMLResdata(*it);
+          CLog::Log(logINFO, "%s%s%s", KMAG, XMLResdata.strResNameFull.c_str(), RESET);
         }
-        else if (!XMLResdata.strGittemplateSRC.empty())
-        {
-          size_t pos;
-          std::string strFormat = XMLResdata.strGittemplateSRC;
-          if ((pos = strFormat.find("%n")) != std::string::npos)
-            strFormat.replace(pos, 2, XMLResdata.strName.c_str());
-
-          std::string strCommand;
-          std::string strCDDirectory = XMLResdata.strResLocalDirectoryForSRC;
-
-#ifdef _MSC_VER
-          strCommand += "cd " + strCDDirectory + " & ";
-          strCommand += "\"" + XMLResdata.strGitExecPathSRC + "sh.exe\" --login -i -c \"git add -A `git rev-parse --show-toplevel`\" & ";
-          strCommand += "\"" + XMLResdata.strGitExecPathSRC + "sh.exe\" --login -i -c \"git commit -m '" + strFormat + "'\"";
-#else
-          strCommand += "cd " + strCDDirectory + ";";
-          strCommand += "git add -A `git rev-parse --show-toplevel`;";
-          strCommand += "git commit -m \"" + strFormat + "\"";
-#endif
-          CLog::Log(logINFO, "GIT commit with the following command: %s", strCommand.c_str());
-          system (strCommand.c_str());
-        }
+        else
+          CLog::Log(logWARNING, "Addon name not found on kodi github repository: %s", it->strAddonName.c_str());
       }
-      else
-        CLog::Log(logWARNING, "Addon name not found on kodi github repository: %s", it->strAddonName.c_str());
-
     }
 
+
+    // Language file downloading
+    if (bDownloadLangFiles)
+    {
+      printf("%s", KGRN);
+      strLogMessage = "DOWNLOADING LANGUAGE DATA FROM KODI TRANSLATION GITHUB REPO";
+      strLogHeader.clear();
+      strLogHeader.resize(strLogMessage.size(), '*');
+      CLog::Log(logLINEFEED, "");
+      CLog::Log(logINFO, "%s", strLogHeader.c_str());
+      CLog::Log(logINFO, "%s", strLogMessage.c_str());
+      CLog::Log(logINFO, "%s", strLogHeader.c_str());
+      printf("%s", RESET);
+
+      for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
+      {
+        if (XMLHandler.m_mapXMLResdata.find(it->strAddonName) != XMLHandler.m_mapXMLResdata.end())
+        {
+          CXMLResdata XMLResdata = XMLHandler.GetXMLResdata(*it);
+          CLog::Log(logINFO, "%s%s%s", KMAG, XMLResdata.strResNameFull.c_str(), RESET);
+
+          ResourceHandler.DloadLangFiles(XMLResdata);
+
+          if (!XMLResdata.strGittemplate.empty())
+          {
+            size_t pos;
+            std::string strFormat = XMLResdata.strGittemplate;
+            if ((pos = strFormat.find("%v")) != std::string::npos)
+              strFormat.replace(pos, 2, XMLResdata.strAddonVersion.c_str());
+            if ((pos = strFormat.find("%n")) != std::string::npos)
+              strFormat.replace(pos, 2, XMLResdata.strName.c_str());
+
+            std::string strCommand;
+            std::string strCDDirectory = XMLResdata.strResLocalDirectory;
+
+  #ifdef _MSC_VER
+            strCommand += "cd " + strCDDirectory + " & ";
+            strCommand += "\"" + XMLResdata.strGitExecPath + "sh.exe\" --login -i -c \"git add -A `git rev-parse --show-toplevel`\" & ";
+            strCommand += "\"" + XMLResdata.strGitExecPath + "sh.exe\" --login -i -c \"git commit -m '" + strFormat + "'\"";
+  #else
+            strCommand += "cd " + strCDDirectory + ";";
+            strCommand += "git add -A `git rev-parse --show-toplevel`;";
+            strCommand += "git commit -m \"" + strFormat + "\"";
+  #endif
+            CLog::Log(logINFO, "GIT commit with the following command: %s", strCommand.c_str());
+            system (strCommand.c_str());
+          }
+          else if (!XMLResdata.strGittemplateSRC.empty())
+          {
+            size_t pos;
+            std::string strFormat = XMLResdata.strGittemplateSRC;
+            if ((pos = strFormat.find("%n")) != std::string::npos)
+              strFormat.replace(pos, 2, XMLResdata.strName.c_str());
+
+            std::string strCommand;
+            std::string strCDDirectory = XMLResdata.strResLocalDirectoryForSRC;
+
+  #ifdef _MSC_VER
+            strCommand += "cd " + strCDDirectory + " & ";
+            strCommand += "\"" + XMLResdata.strGitExecPathSRC + "sh.exe\" --login -i -c \"git add -A `git rev-parse --show-toplevel`\" & ";
+            strCommand += "\"" + XMLResdata.strGitExecPathSRC + "sh.exe\" --login -i -c \"git commit -m '" + strFormat + "'\"";
+  #else
+            strCommand += "cd " + strCDDirectory + ";";
+            strCommand += "git add -A `git rev-parse --show-toplevel`;";
+            strCommand += "git commit -m \"" + strFormat + "\"";
+  #endif
+            CLog::Log(logINFO, "GIT commit with the following command: %s", strCommand.c_str());
+            system (strCommand.c_str());
+          }
+        }
+        else
+          CLog::Log(logWARNING, "Addon name not found on kodi github repository: %s", it->strAddonName.c_str());
+
+      }
+    }
+
+
+    // list addons mode
     if (bListAddonsMode)
     {
       printf("\n"); 
