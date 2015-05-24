@@ -27,7 +27,7 @@
 #include <string>
 #include <stdio.h>
 #include <curl/curl.h>
-#include "XMLHandler.h"
+#include "Types.h"
 
 class CHTTPHandler
 {
@@ -39,7 +39,9 @@ public:
   void DloadURLToFile(std::string strURL, std::string strFilename, std::string strCachename = "");
   void Cleanup();
   void AddToURL (std::string &strURL, std::string strAddendum);
+  void GetGithubData (const std::string &strURL, CGithubURLData &GithubURLData);
   std::string GetGitHUBAPIURL(std::string const & strURL);
+  void GetGitCloneURL(std::string const & strURL, std::string &strGitHubURL, CGithubURLData &GithubURLData);
 private:
   CURL *m_curlHandle;
   std::string URLEncode (std::string strURL);

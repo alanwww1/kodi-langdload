@@ -26,6 +26,7 @@
 #include "FileUtils.h"
 #include "Fileversioning.h"
 #include "CharsetUtils.h"
+#include "XMLHandler.h"
 
 CHTTPHandler g_HTTPHandler;
 
@@ -180,15 +181,12 @@ void CHTTPHandler::AddToURL (std::string &strURL, std::string strAddendum)
     strAddendum = strAddendum.substr(0, strAddendum.size()-1);
   strURL += strAddendum;
 }
-
-std::string CHTTPHandler::GetGitHUBAPIURL(std::string const & strURL)
+void CHTTPHandler::GetGithubData (const std::string &strURL, CGithubURLData &GithubURLData)
 {
-
   if (strURL.find("//") >> 7)
     CLog::Log(logERROR, "CHTTPHandler::ParseGitHUBURL: Internal error: // found in Github URL");
 
   size_t pos1, pos2, pos3, pos4, pos5;
-  std::string strGitHubURL;
 
   if (strURL.find("raw.github.com/") != std::string::npos)
     pos1 = strURL.find("raw.github.com/")+15;
@@ -203,21 +201,34 @@ std::string CHTTPHandler::GetGitHUBAPIURL(std::string const & strURL)
   pos3 = strURL.find("/", pos2+1);
   pos4 = strURL.find("/", pos3+1);
 
-  std::string strOwner = strURL.substr(pos1, pos2-pos1);
-  std::string strRepo = strURL.substr(pos2, pos3-pos2);
-  std::string strPath = strURL.substr(pos4, strURL.size() - pos4 - 1);
-  std::string strGitBranch = strURL.substr(pos3+1, pos4-pos3-1);
+  GithubURLData.strOwner = strURL.substr(pos1, pos2-pos1);
+  GithubURLData.strRepo = strURL.substr(pos2, pos3-pos2);
+  GithubURLData.strPath = strURL.substr(pos4, strURL.size() - pos4 - 1);
+  GithubURLData.strGitBranch = strURL.substr(pos3+1, pos4-pos3-1);
 
-  if ((pos5 = strPath.find_last_of("(")) != std::string::npos)
+  if ((pos5 = GithubURLData.strPath.find_last_of("(")) != std::string::npos)
   {
-    strPath = strPath.substr(0,pos5);
-    strPath = strPath.substr(0,strPath.find_last_of("/"));
+    GithubURLData.strPath = GithubURLData.strPath.substr(0,pos5);
+    GithubURLData.strPath = GithubURLData.strPath.substr(0, GithubURLData.strPath.find_last_of("/"));
   }
+}
 
-  strGitHubURL = "https://api.github.com/repos/" + strOwner + strRepo;
+std::string CHTTPHandler::GetGitHUBAPIURL(std::string const & strURL)
+{
+  CGithubURLData GithubURLData;
+  GetGithubData(strURL, GithubURLData);
+
+  std::string strGitHubURL = "https://api.github.com/repos/" + GithubURLData.strOwner + GithubURLData.strRepo;
   strGitHubURL += "/contents";
-  strGitHubURL += strPath;
-  strGitHubURL += "?ref=" + strGitBranch;
+  strGitHubURL += GithubURLData.strPath;
+  strGitHubURL += "?ref=" + GithubURLData.strGitBranch;
 
   return strGitHubURL;
+}
+
+void CHTTPHandler::GetGitCloneURL(std::string const & strURL, std::string &strGitHubURL, CGithubURLData &GithubURLData)
+{
+
+  GetGithubData(strURL, GithubURLData);
+  strGitHubURL = "git@github.com:" + GithubURLData.strOwner + GithubURLData.strRepo + ".git";
 }

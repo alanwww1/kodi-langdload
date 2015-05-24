@@ -29,6 +29,7 @@ OUTPUT := kodi-langdload
 all: ${OUTPUT}
 
 SRCS := lib/TinyXML/tinyxml.cpp lib/TinyXML/tinyxmlparser.cpp lib/TinyXML/tinystr.cpp lib/TinyXML/tinyxmlerror.cpp \
+lib/XMLHandler.cpp \
 lib/HTTPUtils.cpp \
 lib/CharsetUtils.cpp \
 lib/LCodeHandler.cpp \
@@ -36,7 +37,6 @@ lib/LCode.cpp \
 lib/Fileversioning.cpp \
 lib/FileUtils.cpp \
 lib/Log.cpp \
-lib/XMLHandler.cpp \
 lib/ResourceHandler.cpp \
 lib/JSONHandler.cpp \
 lib/Json-cpp/src/lib_json/json_reader.cpp \
@@ -63,8 +63,8 @@ tinyxmlparser.o: tinyxmlparser.cpp tinyxmlparser.h
 tinyxmlerror.o: tinyxmlerror.cpp tinyxmlerror.h
 tinystr.o: tinystr.cpp tinystr.h
 FileUtils.o: FileUtils.h FileUtils.cpp Log.cpp Log.h
-XMLHandler.o: XMLHandler.h Log.cpp Log.h tinyxml.o CharsetUtils.h CharsetUtils.cpp
-HTTPUtils.o: HTTPUtils.h Log.h Log.cpp
+XMLHandler.o: XMLHandler.h Log.cpp Log.h tinyxml.o CharsetUtils.h CharsetUtils.cpp Types.h
+HTTPUtils.o: HTTPUtils.h Log.h Log.cpp Types.h
 JSONHandler.o: JSONHandler.h JSONHandler.cpp
 ResourceHandler.o: ResourceHandler.h Log.cpp Log.h JSONHandler.o JSONHandler.h JSONHandler.cpp
 CharsetUtils.o: CharsetUtils.cpp CharsetUtils.h

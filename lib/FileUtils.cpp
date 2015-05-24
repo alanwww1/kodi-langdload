@@ -21,6 +21,7 @@
 
 #include "FileUtils.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <ctime>
 #include <iostream>
@@ -329,3 +330,32 @@ std::string CFile::IntToStr(int number)
   ss << number;//add number to the stream
   return ss.str();//return a string with the contents of the stream
 };
+
+/*
+std::string CFile::GetGitToplevelPath(std::string strPath)
+{
+  if (strPath.rfind("/") != strPath.size()-1)
+    strPath += "/";
+
+  size_t posper;
+  while ((posper = strPath.find_last_of("/")) != std::string::npos && strPath.size() != 0)
+  {
+    strPath = strPath.substr(0, posper+1);
+    if (FileExist(strPath + ".git/config"))
+      break;
+    if (strPath.rfind("../") == strPath.size()-3)
+      break;
+    strPath = strPath.substr(0, strPath.size()-1);
+  }
+  if (FileExist(strPath + ".git/config"))
+    return strPath;
+  return "";
+}
+*/
+
+void CFile::SytemCommand (const std::string &strCommand)
+{
+  int status = system (strCommand.c_str());
+  if (status == 32768)
+    CLog::Log(logERROR, "System command failed with return value %i", WEXITSTATUS(status));
+}

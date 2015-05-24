@@ -23,6 +23,7 @@
 #define XMLHANDLER_H
 
 #include "TinyXML/tinyxml.h"
+#include "Types.h"
 #include <string>
 #include <map>
 #include <list>
@@ -34,7 +35,11 @@ public:
   ~CInputData();
   std::string strAddonName;
   std::string strAddonDir;
+  std::string strGitToplevelPath;
+  std::string strGitCloneName;
   std::string strAddonDirForSource;
+  std::string strGitToplevelPathSRC;
+  std::string strGitCloneNameSRC;
   std::string strGittemplate;
   std::string strGittemplateSRC;
   std::string strGitExecPath;
@@ -81,12 +86,25 @@ public:
   std::string LangDatabaseURL;
 
   std::string strResLocalDirectory;
+  std::string strGitToplevelPath;
+  std::string strGitCloneName;
   std::string strResLocalDirectoryForSRC;
+  std::string strGitToplevelPathSRC;
+  std::string strGitCloneNameSRC;
   std::string strGittemplate;
   std::string strGitExecPath;
   std::string strGittemplateSRC;
   std::string strGitExecPathSRC;
   std::string strAddonVersion;
+};
+
+struct CGithubData
+{
+  std::string strGithubURL;
+  CGithubURLData GithubURLData;
+  std::string strLocalGithubPath;
+  std::string strGitCloneName;
+  std::list<CXMLResdata> listXMLResdata;
 };
 
 class CUpdateXMLHandler

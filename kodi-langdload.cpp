@@ -36,6 +36,7 @@
 #include "lib/FileUtils.h"
 #include "lib/JSONHandler.h"
 #include "lib/LCode.h"
+#include "lib/CharsetUtils.h"
 
 using namespace std;
 
@@ -86,7 +87,7 @@ int main(int argc, char* argv[])
   std::string strInputXMLPath;
   bool bListAddonsMode = false;
   bool bDoGitPull = true;
-  bool bDownloadLangFiles = true;
+  bool bDownloadLangFiles = false;
 
   if (argc == 3 || argc ==4 )
   {
@@ -216,15 +217,141 @@ int main(int argc, char* argv[])
       CLog::Log(logINFO, "%s", strLogHeader.c_str());
       printf("%s", RESET);
 
+      std::map<std::string, CGithubData> mapGithubRepos;
+      std::map<std::string, CGithubData> mapGithubReposCommited;
+
+      std::list<CXMLResdata> listXMLdata;
+
       for (std::list<CInputData>::iterator it = listInputData.begin(); it != listInputData.end(); it++)
       {
         if (XMLHandler.m_mapXMLResdata.find(it->strAddonName) != XMLHandler.m_mapXMLResdata.end())
         {
           CXMLResdata XMLResdata = XMLHandler.GetXMLResdata(*it);
-          CLog::Log(logINFO, "%s%s%s", KMAG, XMLResdata.strResNameFull.c_str(), RESET);
+          std::string strGitCloneURL, strGitCloneURLPlusBranch;
+          CGithubURLData GithubURLData;
+
+          if (!XMLResdata.bIsLanguageAddon || !XMLResdata.bSkipLangfiles)
+          {
+            if (!XMLResdata.bHasOnlyAddonXML)
+              g_HTTPHandler.GetGitCloneURL(XMLResdata.strUPSLangURLRoot, strGitCloneURL, GithubURLData);
+            else
+              g_HTTPHandler.GetGitCloneURL(XMLResdata.strUPSAddonURLRoot, strGitCloneURL, GithubURLData);
+
+            strGitCloneURLPlusBranch = strGitCloneURL + " branch:" + GithubURLData.strGitBranch;
+
+            if (mapGithubRepos.find(strGitCloneURLPlusBranch) != mapGithubRepos.end())
+            {
+              mapGithubRepos[strGitCloneURLPlusBranch].listXMLResdata.push_back(XMLResdata);
+            }
+            else
+            {
+              CGithubData GithubData;
+              GithubData.listXMLResdata.push_back(XMLResdata);
+              GithubData.strGithubURL = strGitCloneURL;
+              GithubData.GithubURLData.strGitBranch = GithubURLData.strGitBranch;
+              mapGithubRepos[strGitCloneURLPlusBranch] = GithubData;
+            }
+            if (!XMLResdata.strGittemplate.empty())
+            {
+              mapGithubRepos[strGitCloneURLPlusBranch].strLocalGithubPath = XMLResdata.strGitToplevelPath;
+              mapGithubRepos[strGitCloneURLPlusBranch].strGitCloneName = XMLResdata.strGitCloneName;
+              mapGithubReposCommited[strGitCloneURLPlusBranch] = mapGithubRepos[strGitCloneURLPlusBranch];
+            }
+          }
+
+          // Source language file handling for language-addons
+          if (!XMLResdata.strUPSSourceLangURL.empty() && !XMLResdata.bSkipSRCLangfile)
+          {
+            g_HTTPHandler.GetGitCloneURL(XMLResdata.strUPSSourceLangURL, strGitCloneURL, GithubURLData);
+
+            strGitCloneURLPlusBranch = strGitCloneURL + " branch:" + GithubURLData.strGitBranch;
+
+            if (mapGithubRepos.find(strGitCloneURLPlusBranch) != mapGithubRepos.end())
+            {
+              mapGithubRepos[strGitCloneURLPlusBranch].listXMLResdata.push_back(XMLResdata);
+            }
+            else
+            {
+              CGithubData GithubData;
+              GithubData.listXMLResdata.push_back(XMLResdata);
+              GithubData.strGithubURL = strGitCloneURL;
+              GithubData.GithubURLData.strGitBranch = GithubURLData.strGitBranch;
+              mapGithubRepos[strGitCloneURLPlusBranch] = GithubData;
+            }
+            if (!XMLResdata.strGittemplateSRC.empty())
+            {
+              mapGithubRepos[strGitCloneURLPlusBranch].strLocalGithubPath = XMLResdata.strGitToplevelPathSRC;
+              mapGithubRepos[strGitCloneURLPlusBranch].strGitCloneName = XMLResdata.strGitCloneNameSRC;
+              mapGithubReposCommited[strGitCloneURLPlusBranch] = mapGithubRepos[strGitCloneURLPlusBranch];
+            }
+          }
         }
         else
           CLog::Log(logWARNING, "Addon name not found on kodi github repository: %s", it->strAddonName.c_str());
+      }
+
+      for (std::map<std::string, CGithubData>::iterator itmap = mapGithubRepos.begin(); itmap != mapGithubRepos.end(); itmap++)
+      {
+        CGithubData GitData = itmap->second;
+        CLog::Log(logINFONLF, "%s branch: %s%s%s for addon(s): ", GitData.strGithubURL.c_str(),KCYN, GitData.GithubURLData.strGitBranch.c_str(), RESET);
+
+        std::map<std::string, std::string> listTouchedProjects;
+        for (std::list<CXMLResdata>::iterator itresdata = GitData.listXMLResdata.begin(); itresdata != GitData.listXMLResdata.end();itresdata++)
+        {
+          // create a list of corresponding projects for later use (kodi-txupdate)
+          if (listTouchedProjects.find (itresdata->strProjName) == listTouchedProjects.end())
+            listTouchedProjects[itresdata->strProjName] = itresdata->strProjName;
+
+          CLog::Log(logINFONLF, "%s%s%s ", KMAG, itresdata->strName.c_str(), RESET);
+        }
+
+        if (mapGithubReposCommited.find(itmap->first) == mapGithubReposCommited.end())
+          CLog::Log(logWARNING, "%s(not to be commited)%s", KRED, RESET);
+        else
+        {
+          std::string strCommand;
+
+          if (!g_File.FileExist(GitData.strLocalGithubPath + GitData.strGitCloneName + "/.git/config"))
+          //no local directory present, cloning one
+          {
+            CLog::Log(logLINEFEED, "");
+            // clean directory if exists, unless git clone fails
+            g_File.DelDirectory(GitData.strLocalGithubPath);
+            g_File.MakeDir(GitData.strLocalGithubPath);
+
+            strCommand = "cd " + GitData.strLocalGithubPath + ";";
+            strCommand += "git clone " + GitData.strGithubURL + " " + GitData.strGitCloneName;
+            CLog::Log(logINFO, "%sGIT cloning with the following command:%s\n%s%s%s",KMAG, RESET, KYEL, strCommand.c_str(), RESET);
+            g_File.SytemCommand(strCommand);
+
+            strCommand = "cd " + GitData.strLocalGithubPath + GitData.strGitCloneName + ";";
+            strCommand += "git checkout " + GitData.GithubURLData.strGitBranch;
+            CLog::Log(logINFO, "%sGIT checkout branch: %s%s%s%s\n%s%s%s",KMAG, RESET, KCYN,GitData.GithubURLData.strGitBranch.c_str(), RESET, KYEL, strCommand.c_str(), RESET);
+            g_File.SytemCommand(strCommand);
+          }
+          else
+          //local git clone is present, we clean it and update it
+          {
+            CLog::Log(logLINEFEED, "");
+
+            strCommand = "cd " + GitData.strLocalGithubPath + GitData.strGitCloneName + ";";
+            strCommand += "git reset --hard origin/" + GitData.GithubURLData.strGitBranch;
+            CLog::Log(logINFO, "%sGIT creset to branch: %s%s%s%s\n%s%s%s",KMAG, RESET, KCYN,GitData.GithubURLData.strGitBranch.c_str(), RESET, KYEL, strCommand.c_str(), RESET);
+            g_File.SytemCommand(strCommand);
+
+            strCommand = "cd " + GitData.strLocalGithubPath + GitData.strGitCloneName + ";";
+            strCommand += "git clean -f -d -x";
+            CLog::Log(logINFO, "%sRemove untracked files%s\n%s%s%s", KMAG, RESET, KYEL, strCommand.c_str(), RESET);
+            g_File.SytemCommand(strCommand);
+
+            strCommand = "cd " + GitData.strLocalGithubPath + GitData.strGitCloneName + ";";
+            strCommand += "git pull";
+            CLog::Log(logINFO, "%sPull latest git changes%s\n%s%s%s", KMAG, RESET, KYEL, strCommand.c_str(), RESET);
+            g_File.SytemCommand(strCommand);
+          }
+        }
+
+        CLog::Log(logLINEFEED, "");
       }
     }
 

@@ -65,6 +65,7 @@ public:
   std::string GetCurrMonthText();
   void AddToFilename (std::string &strFilename, std::string strAddendum);
   std::string IntToStr(int number);
+  void SytemCommand (const std::string &strCommand);
 };
 
 extern CFile g_File;
