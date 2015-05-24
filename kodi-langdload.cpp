@@ -310,6 +310,7 @@ int main(int argc, char* argv[])
         else
         {
           std::string strCommand;
+          CLog::Log(logLINEFEED, "");
 
           if (!g_File.FileExist(GitData.strLocalGithubPath + GitData.strGitCloneName + "/.git/config"))
           //no local directory present, cloning one
@@ -336,7 +337,7 @@ int main(int argc, char* argv[])
 
             strCommand = "cd " + GitData.strLocalGithubPath + GitData.strGitCloneName + ";";
             strCommand += "git reset --hard origin/" + GitData.GithubURLData.strGitBranch;
-            CLog::Log(logINFO, "%sGIT creset to branch: %s%s%s%s\n%s%s%s",KMAG, RESET, KCYN,GitData.GithubURLData.strGitBranch.c_str(), RESET, KYEL, strCommand.c_str(), RESET);
+            CLog::Log(logINFO, "%sGIT reset existing local repo to branch: %s%s%s%s\n%s%s%s",KMAG, RESET, KCYN,GitData.GithubURLData.strGitBranch.c_str(), RESET, KYEL, strCommand.c_str(), RESET);
             g_File.SytemCommand(strCommand);
 
             strCommand = "cd " + GitData.strLocalGithubPath + GitData.strGitCloneName + ";";

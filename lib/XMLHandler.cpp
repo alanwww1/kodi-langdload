@@ -309,11 +309,14 @@ std::list<CInputData> CInputXMLHandler::ReadXMLToMem(string strFileName)
     const TiXmlElement *pChildDirSRCElement = pChildResElement->FirstChildElement("localdirsource");
     if (pChildDirSRCElement && pChildDirSRCElement->FirstChild())
       currInputData.strAddonDirForSource = pChildDirSRCElement->FirstChild()->Value();
-    if ((currInputData.strAddonDirForSource.size() < 3) || (pos = currInputData.strAddonDirForSource.find("//")) > (currInputData.strAddonDirForSource.size()-2))
-      CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: No github toplevel path indication characters found (\"\\\\\") or no git clone name found");
-    currInputData.strGitToplevelPathSRC = currInputData.strAddonDirForSource.substr(0, pos+1);
-    currInputData.strGitCloneNameSRC = g_CharsetUtils.GetFilenameFromURL(currInputData.strAddonDirForSource.substr(0, currInputData.strAddonDirForSource.find("/", pos + 2)));
-    currInputData.strAddonDirForSource.erase(pos,1);
+    if (!currInputData.strAddonDirForSource.empty())
+    {
+      if ((currInputData.strAddonDirForSource.size() < 3) || (pos = currInputData.strAddonDirForSource.find("//")) > (currInputData.strAddonDirForSource.size()-2))
+        CLog::Log(logERROR, "CInputXMLHandler::ReadXMLToMem: No github toplevel path indication characters found (\"\\\\\") or no git clone name found");
+      currInputData.strGitToplevelPathSRC = currInputData.strAddonDirForSource.substr(0, pos+1);
+      currInputData.strGitCloneNameSRC = g_CharsetUtils.GetFilenameFromURL(currInputData.strAddonDirForSource.substr(0, currInputData.strAddonDirForSource.find("/", pos + 2)));
+      currInputData.strAddonDirForSource.erase(pos,1);
+    }
 
     std::string strBool;
     const TiXmlElement *pChildSkipchlogElement = pChildResElement->FirstChildElement("skipchangelog");
