@@ -103,6 +103,12 @@ std::string CHTTPHandler::GetURLToSTR(std::string strURL, std::string strCachena
       curl_easy_setopt(m_curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
       curl_easy_setopt(m_curlHandle, CURLOPT_FOLLOWLOCATION, true);
 
+      if (!m_strgithubUsername.empty())
+      {
+        curl_easy_setopt(m_curlHandle, CURLOPT_USERNAME, m_strgithubUsername.c_str());
+        curl_easy_setopt(m_curlHandle, CURLOPT_PASSWORD, m_strgithubPassword.c_str());
+      }
+
       curlResult = curl_easy_perform(m_curlHandle);
       long http_code = 0;
       curl_easy_getinfo (m_curlHandle, CURLINFO_RESPONSE_CODE, &http_code);
@@ -231,4 +237,13 @@ void CHTTPHandler::GetGitCloneURL(std::string const & strURL, std::string &strGi
 
   GetGithubData(strURL, GithubURLData);
   strGitHubURL = "git@github.com:" + GithubURLData.strOwner + GithubURLData.strRepo + ".git";
+}
+
+void CHTTPHandler::SetCredentials (const std::string &strUN, const std::string &strPW)
+{
+  if (strUN.empty())
+    return;
+
+  m_strgithubUsername = strUN;
+  m_strgithubPassword = strPW;
 }

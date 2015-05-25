@@ -37,6 +37,7 @@
 #include "lib/JSONHandler.h"
 #include "lib/LCode.h"
 #include "lib/CharsetUtils.h"
+#include "lib/ConfigHandler.h"
 
 using namespace std;
 
@@ -87,7 +88,7 @@ int main(int argc, char* argv[])
   std::string strInputXMLPath;
   bool bListAddonsMode = false;
   bool bDoGitPull = true;
-  bool bDownloadLangFiles = false;
+  bool bDownloadLangFiles = true;
 
   if (argc == 3 || argc ==4 )
   {
@@ -159,6 +160,11 @@ int main(int argc, char* argv[])
     CLog::Log(logINFO, "%s", strLogHeader.c_str());
     CLog::IncIdent(2);
     printf("%s", RESET);
+
+    CConfigXMLHandler ConfigXMLHandler;
+    CConfigData ConfigData = ConfigXMLHandler.ReadConfigXML();
+
+    g_HTTPHandler.SetCredentials(ConfigData.strGithubUsername, ConfigData.strGithubPassword);
 
     CResourceHandler ResourceHandler;
     CUpdateXMLHandler XMLHandler;
